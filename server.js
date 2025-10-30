@@ -3,7 +3,7 @@ import connectDB from './config/db.js';
 import cors from 'cors';
 import 'dotenv/config';
 
-require('./utils/cron.js');
+import './utils/cron.js';
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
