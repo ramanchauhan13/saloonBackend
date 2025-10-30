@@ -25,22 +25,55 @@ const salonSchema = new mongoose.Schema({
   },
   registrationNumber: String,
 
-  location: {
-    address: String,
-    city: String,
-    state: String,
-    pincode: String,
-    coordinates: { type: [Number], index: "2dsphere" },
+  // ✅ GeoJSON location
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+        index: "2dsphere",
+      },
+      address: { type: String },
+      city: { type: String },
+      state: { type: String },
+      pincode: { type: String },
+    },
     
-  },
-
-  serviceItems: [{ type: mongoose.Schema.Types.ObjectId, ref: "ServiceItem" }], 
-  specialists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Specialist" }],
   galleryImages: [String],
-  ratings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
-
+  // ratings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
+   governmentId: {
+    idType: { type: String, enum: ["Aadhaar", "PAN", "DL"] },
+    idNumber: String,
+    idImageUrl: String,
+  },
   verifiedByAdmin: { type: Boolean, default: false },
-}, { timestamps: true });
+}, { timestamps: true, toJSON: { virtuals: true },
+  toObject: { virtuals: true } });
 
+// ✅ Virtual populate for specialists
+salonSchema.virtual("specialistsData", {
+  ref: "Specialist",
+  localField: "_id",
+  foreignField: "salon",
+});
+
+// ✅ Virtual populate for service items
+salonSchema.virtual("serviceItemData", {
+  ref: "ServiceItem",
+  localField: "_id",
+  foreignField: "providerId",
+  justOne: false,
+  options: { match: { providerType: "salon" } }
+});
+
+salonSchema.virtual("reviewData", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "salon",
+});
 
 export default mongoose.model("Salon", salonSchema);

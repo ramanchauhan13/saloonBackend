@@ -9,18 +9,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
   role: {
     type: String,
-    enum: ["customer", "salon_owner", "independent_beautician", "admin"],
+    enum: ["customer", "salon_owner", "independent_beautician", "super_admin"],
     default: "customer"
   },
-  isVerified: { type: Boolean, default: false },
-  governmentId: {
-    type: {
-      idType: { type: String, enum: ["Aadhaar", "PAN", "DL"] },
-      idNumber: { type: String },
-      idImageUrl: { type: String },
-    },
-    default: null,
-  },
+  status: { type: String, enum: ["active", "blocked"], default: "active" },
   resetPasswordOTP: { type: String },
   resetPasswordExpire: { type: Date },
 }, { timestamps: true });

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Salon from "../models/Salon.js";
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -21,7 +22,7 @@ export const authenticate = async (req, res, next) => {
 
     // Set user info to request
     req.user = user; 
-    req.userId = user._id; 
+    req.userId = user._id;
 
     next();
   } catch (err) {
@@ -39,22 +40,77 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const checkAdmin = async (req, res, next) => {
+export const isSalonVerifiedByAdmin = async (req, res, next) => {
+  try {
+    // ✅ Auth middleware already set req.user
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized - No user found" });
+    }
+
+    // ✅ Find salon owned by this user
+    const salon = await Salon.findOne({ owner: userId });
+
+    if (!salon) {
+      return res.status(404).json({ error: "Salon not found for this user" });
+    }
+
+    // ✅ Check admin verification
+    if (!salon.verifiedByAdmin) {
+      return res.status(403).json({
+        error: "Access denied - Salon not verified by admin yet",
+      });
+    }
+
+    // ✅ Attach salon to request for controller use
+    req.salon = salon;
+    next();
+  } catch (error) {
+    console.error("Salon verification middleware error:", error);
+    res.status(500).json({
+      error: "Server error while verifying salon status",
+    });
+  }
+};
+
+
+export const isSalonOwner = async (req, res, next) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: "Authentication required" });
     }
 
-    if (req.user.role !== 'admin') {
+    if (req.user.role !== 'salon_owner') {
       return res.status(403).json({
-        error: "Forbidden - Admin access required",
+        error: "Forbidden - Salon Owner access required",
         message: "User not authorized to access this resource"
       });
     }
 
     next();
   } catch (err) {
-    console.error('Admin check error:', err.message);
+    console.error('Salon Owner check error:', err.message);
+    res.status(500).json({ error: "Authorization check failed" });
+  }
+};
+
+export const isSuperAdmin = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        error: "Forbidden - Super Admin access required",
+        message: "User not authorized to access this resource"
+      });
+    }
+
+    next();
+  } catch (err) {
+    console.error('Super Admin check error:', err.message);
     res.status(500).json({ error: "Authorization check failed" });
   }
 };

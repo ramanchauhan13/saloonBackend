@@ -23,6 +23,11 @@ const independentSchema = new mongoose.Schema({
   availableTimeSlots: [String], // ["10:00-12:00", "14:00-16:00"]
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: "ServiceItem" }],
 
+  governmentId: {
+    idType: { type: String, enum: ["Aadhaar", "PAN", "DL"] },
+    idNumber: String,
+    idImageUrl: String,
+  },
   verifiedByAdmin: { type: Boolean, default: false },
 }, { timestamps: true });
 
