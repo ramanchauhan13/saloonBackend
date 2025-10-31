@@ -100,6 +100,9 @@ export const editCategory = async (req, res) => {
 export const getAllCategories = async (req, res) => {
   try {
     const categories = await Category.find().lean();
+    if(!categories || categories.length === 0){
+      return res.status(404).json({ message: "No categories found" });
+    }
     res.status(200).json({ success: true, categories });
   } catch (error) {
     console.error("Error fetching categories:", error);
