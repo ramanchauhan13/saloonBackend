@@ -29,6 +29,6 @@ router.get(
   getSpecialistsBySalon
 );
 
-router.patch('/add-location/:salonId', addOrUpdateSalonLocation);
+router.patch("/add-location/:salonId", addOrUpdateSalonLocation);
 
 export default router;
