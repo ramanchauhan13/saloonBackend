@@ -115,3 +115,25 @@ export const isSuperAdmin = async (req, res, next) => {
   }
 };
 
+// middleware/checkSubscription.js
+export const checkSubscription = (req, res, next) => {
+  try {
+    const sub = req.user.subscription; // user comes from auth middleware
+
+    if (!sub || !sub.endDate || sub.status !== "paid") {
+      return res.status(403).json({ message: "No active subscription found" });
+    }
+
+    const now = new Date();
+    const endDate = new Date(sub.endDate);
+
+    if (endDate < now) {
+      return res.status(403).json({ message: "Subscription has expired" });
+    }
+
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ message: "Subscription check failed" });
+  }
+};

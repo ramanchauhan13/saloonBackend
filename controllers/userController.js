@@ -200,3 +200,11 @@ export const giveReview = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+// const getLocationFromCoordinates = (req, res) => {
+//   const { latitude, longitude } = req.body;
+
+//   // This is a placeholder function. In a real application, you would use a geocoding service.
+//   if (!latitude || !longitude) {
+//     return res.status(400).json({ message: "Latitude and Longitude are required" });
+//   }

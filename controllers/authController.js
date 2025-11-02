@@ -21,12 +21,18 @@ const generateToken = (user) => {
 
 // REGISTER USER / SALON / PROFESSIONAL
 export const signup = async (req, res) => {
+  console.log("Signup request body:", req.body);
   try {
     const { name, email, phone, password, role, salonData, independentData } = req.body;
 
     const existingUser = await User.findOne({ phone });
     if (existingUser)
       return res.status(400).json({ message: "Phone number already registered" });
+
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, phone, password: hashedPassword, role });
@@ -35,7 +41,7 @@ export const signup = async (req, res) => {
 
     if (role === "salon_owner" && salonData) {
       roleDetails = await Salon.create({ ...salonData, owner: user._id });
-    } else if (role === "independent_beautician" && independentData) {
+    } else if (role === "independent_pro" && independentData) {
       roleDetails = await IndependentProfessional.create({ ...independentData, user: user._id });
     }
 
@@ -75,7 +81,7 @@ export const login = async (req, res) => {
     let roleDetails = null;
     if (user.role === "salon_owner") {
       roleDetails = await Salon.findOne({ owner: user._id }).lean();
-    } else if (user.role === "independent_beautician") {
+    } else if (user.role === "independent_pro") {
       roleDetails = await IndependentProfessional.findOne({ user: user._id }).lean();
     }
 
@@ -88,7 +94,7 @@ export const login = async (req, res) => {
       user: {
         ...userData,
         ...(user.role === "salon_owner" ? { salon: roleDetails } : {}),
-        ...(user.role === "independent_beautician" ? { independentProfile: roleDetails } : {}),
+        ...(user.role === "independent_pro" ? { independentProfile: roleDetails } : {}),
       },
       token,
     });

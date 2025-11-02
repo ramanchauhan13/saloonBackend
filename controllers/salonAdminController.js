@@ -123,4 +123,30 @@ export const addOrUpdateSalonLocation = async (req, res) => {
   }
 };
 
+export const checkSubscriptionStatus = async (req, res) => {
+  console.log("Checking subscription status for user:", req.userId);
+  const userId = req.userId;
+   try {
+    const salon = await Salon.findOne({ owner: userId });
+    if (!salon) return res.status(404).json({ message: "Salon not found" });
+
+    const { subscription } = salon;
+
+    let isSubscriptionActive = false;
+
+    if (subscription && subscription.planId && subscription.endDate && subscription.paymentStatus === "paid") {
+      isSubscriptionActive = new Date(subscription.endDate) > new Date();
+    }
+
+    res.json({
+      isSubscriptionActive,
+      subscription,
+    });
+    console.log("Subscription status response sent for user:", isSubscriptionActive, subscription);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 

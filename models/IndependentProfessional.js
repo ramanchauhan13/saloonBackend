@@ -28,6 +28,12 @@ const independentSchema = new mongoose.Schema({
     idNumber: String,
     idImageUrl: String,
   },
+  subscription: {
+  planId: { type: mongoose.Schema.Types.ObjectId, ref: "SubscriptionPlan", default: null },
+  startDate: { type: Date, default: null },
+  endDate: { type: Date, default: null },
+  paymentStatus: { type: String, enum: ["paid", "pending", "expired"], default: "pending" },
+},
   verifiedByAdmin: { type: Boolean, default: false },
 }, { timestamps: true });
 

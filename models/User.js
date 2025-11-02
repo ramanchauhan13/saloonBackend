@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
   role: {
     type: String,
-    enum: ["customer", "salon_owner", "independent_beautician", "super_admin"],
+    enum: ["customer", "salon_owner", "independent_pro", "super_admin"],
     default: "customer"
   },
   status: { type: String, enum: ["active", "blocked"], default: "active" },

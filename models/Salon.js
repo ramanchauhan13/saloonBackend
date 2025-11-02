@@ -17,6 +17,12 @@ const salonSchema = new mongoose.Schema({
   contactNumber: String,
   whatsappNumber: String,
 
+   salonCategory: {
+    type: String,
+    enum: ["men", "women", "unisex", "beautyParlour", "spa", "barbershop"],
+    required: true,
+  },
+
   numberOfStaff: Number,
   openingDate: Date,
   openingHours: {
@@ -50,6 +56,12 @@ const salonSchema = new mongoose.Schema({
     idNumber: String,
     idImageUrl: String,
   },
+  subscription: {
+  planId: { type: mongoose.Schema.Types.ObjectId, ref: "SubscriptionPlan", default: null },
+  startDate: { type: Date, default: null },
+  endDate: { type: Date, default: null },
+  paymentStatus: { type: String, enum: ["paid", "pending", "expired"], default: "pending" },
+},
   verifiedByAdmin: { type: Boolean, default: false },
 }, { timestamps: true, toJSON: { virtuals: true },
   toObject: { virtuals: true } });

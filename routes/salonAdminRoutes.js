@@ -4,6 +4,7 @@ import {
   getSpecialistsBySalon,
   getSaloonDetails,
   addOrUpdateSalonLocation,
+  checkSubscriptionStatus
 } from "../controllers/salonAdminController.js";
 import {
   authenticate,
@@ -30,5 +31,7 @@ router.get(
 );
 
 router.patch("/add-location/:salonId", addOrUpdateSalonLocation);
+
+router.get("/subscription-status", authenticate, isSalonOwner, checkSubscriptionStatus);
 
 export default router;

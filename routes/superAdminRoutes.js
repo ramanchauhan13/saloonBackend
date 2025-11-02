@@ -12,6 +12,7 @@ import {
   deleteOffer,
   updateOffer,
   getAllOffers,
+  getAllUsers,
 } from "../controllers/superAdminController.js";
 
 const router = Router();
@@ -38,5 +39,7 @@ router.post("/create-offer", authenticate, isSuperAdmin, createOffer);
 router.delete("/delete-offer/:offerId", authenticate, isSuperAdmin, deleteOffer);
 router.put("/update-offer/:offerId", authenticate, isSuperAdmin, updateOffer);
 router.get("/get-all-offers", authenticate, getAllOffers);
+
+router.get('/get-all-users', authenticate, isSuperAdmin, getAllUsers);
 
 export default router;
