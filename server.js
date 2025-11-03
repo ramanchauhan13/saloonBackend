@@ -2,7 +2,6 @@ import express from 'express';
 import connectDB from './config/db.js';
 import cors from 'cors';
 import 'dotenv/config';
-
 import './utils/cron.js';
 
 // Route Imports
@@ -10,7 +9,6 @@ import authRoutes from './routes/authRoutes.js';
 import salonAdminRoutes from './routes/salonAdminRoutes.js';
 import superAdminRoutes from './routes/superAdminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,3 +40,6 @@ app.use('/api/user', userRoutes);
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
 });
+
+
+
