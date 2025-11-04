@@ -12,7 +12,7 @@ export const getSaloonDetails = async (req, res) => {
     options: { sort: { createdAt: -1 } }
   });
     if (!salon) {
-      return res.status(404).json({ success: false, message: "Salon not found" });
+      return res.status(404).json({ success: false, message: "Salo n not found" });
     }
     res.status(200).json({
         success: true,
@@ -284,6 +284,7 @@ export const deleteServiceItem = async (req, res) => {
 
 
 export const getServiceItemsBySalon = async (req, res) => {
+  console.log("Fetching services for user:", req.userId);
   try {
     const userId = req.userId;
     const salon = await Salon.findOne({ owner: userId });
@@ -292,6 +293,7 @@ export const getServiceItemsBySalon = async (req, res) => {
     }
     const services = await ServiceItem.find({ providerId: salon._id });
     res.status(200).json({ success: true, services });
+    console.log("Services fetched successfully for user:", services);
   } catch (error) {
     console.error("Error fetching services:", error);
     res.status(500).json({ success: false, message: "Server error while fetching services", error: error.message });

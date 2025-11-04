@@ -60,6 +60,7 @@ export const isSalonVerifiedByAdmin = async (req, res, next) => {
     if (!salon.verifiedByAdmin) {
       return res.status(403).json({
         error: "Access denied - Salon not verified by admin yet",
+        message: "Please wait for admin approval to access this resource"
       });
     }
 
