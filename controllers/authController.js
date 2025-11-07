@@ -20,10 +20,8 @@ const generateToken = (user) => {
 };
 
 // REGISTER USER / SALON / PROFESSIONAL
-
 export const signup = async (req, res) => {
   console.log("Signup request body:", req.body);
-
   try {
     const { name, email, phone, password, role, salonData, independentData } = req.body;
 
