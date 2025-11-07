@@ -19,7 +19,7 @@ const salonSchema = new mongoose.Schema({
 
    salonCategory: {
     type: String,
-    enum: ["men", "women", "unisex", "beautyParlour", "spa", "barbershop"],
+    enum: ["menSalon", "beautyParlour", "unisex", "spa", "barbershop"],
     required: true,
   },
 
@@ -48,8 +48,9 @@ const salonSchema = new mongoose.Schema({
       state: { type: String },
       pincode: { type: String },
     },
-    
-  galleryImages: [String],
+    logoUrl: String,
+    coverImageUrl: String,
+    galleryImages: [String],
   // ratings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
    governmentId: {
     idType: { type: String, enum: ["Aadhaar", "PAN", "DL"] },

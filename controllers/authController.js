@@ -20,20 +20,69 @@ const generateToken = (user) => {
 };
 
 // REGISTER USER / SALON / PROFESSIONAL
+
 export const signup = async (req, res) => {
   console.log("Signup request body:", req.body);
+
   try {
     const { name, email, phone, password, role, salonData, independentData } = req.body;
 
-    const existingUser = await User.findOne({ phone });
-    if (existingUser)
-      return res.status(400).json({ message: "Phone number already registered" });
-
+    // Check for existing email first
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
+    // Check for existing phone
+    let existingUser = await User.findOne({ phone });
+
+    if (existingUser) {
+      // If user exists and trying to register as salon_owner
+      if (role === "salon_owner") {
+        const existingSalon = await Salon.findOne({ owner: existingUser._id });
+        if (existingSalon) {
+          return res.status(400).json({ message: "This user is already a salon owner" });
+        }
+
+        // Create new salon linked to existing user
+        const roleDetails = await Salon.create({ ...salonData, owner: existingUser._id });
+
+        // Update user role & salonId
+        existingUser.role = "salon_owner";
+        existingUser.salonId = roleDetails._id;
+        await existingUser.save();
+
+        const token = generateToken(existingUser);
+        return res.status(201).json({
+          message: "Salon registration successful",
+          user: { ...existingUser.toObject(), salon: roleDetails },
+          token,
+        });
+      } else if (role === "independent_pro") {
+        const existingProfile = await IndependentProfessional.findOne({ user: existingUser._id });
+        if (existingProfile) {
+          return res.status(400).json({ message: "Independent profile already exists" });
+        }
+
+        // Create independent profile
+        const roleDetails = await IndependentProfessional.create({ ...independentData, user: existingUser._id });
+
+        // Update user role
+        existingUser.role = "independent_pro";
+        await existingUser.save();
+
+        const token = generateToken(existingUser);
+        return res.status(201).json({
+          message: "Independent professional registration successful",
+          user: { ...existingUser.toObject(), independentProfile: roleDetails },
+          token,
+        });
+      } else {
+        return res.status(400).json({ message: "Phone number already registered" });
+      }
+    }
+
+    // New user registration
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, phone, password: hashedPassword, role });
 
@@ -41,6 +90,8 @@ export const signup = async (req, res) => {
 
     if (role === "salon_owner" && salonData) {
       roleDetails = await Salon.create({ ...salonData, owner: user._id });
+      user.salonId = roleDetails._id;
+      await user.save();
     } else if (role === "independent_pro" && independentData) {
       roleDetails = await IndependentProfessional.create({ ...independentData, user: user._id });
     }
@@ -49,7 +100,14 @@ export const signup = async (req, res) => {
 
     res.status(201).json({
       message: "Registration successful",
-      user: { ...user.toObject(), ...(role === "salon_owner" ? { salon: roleDetails } : { independentProfile: roleDetails }) },
+      user: {
+        ...user.toObject(),
+        ...(role === "salon_owner"
+          ? { salon: roleDetails }
+          : role === "independent_pro"
+          ? { independentProfile: roleDetails }
+          : {}),
+      },
       token,
     });
   } catch (err) {
