@@ -70,7 +70,7 @@ export const getSpecialistsBySalon = async (req, res) => {
   try {
     const userId = req.userId;
     // Verify salon exists
-    const salon = await Salon.findOne({ owner: userId }).populate('specialistsData');
+    const salon = await Salon.findOne({ owner: userId }).populate('specialistsData').lean();
     if (!salon) {
       return res.status(404).json({ success: false, message: "Salon not found" });
     }
@@ -292,7 +292,7 @@ export const getServiceItemsBySalon = async (req, res) => {
     if (!salon) {
       return res.status(404).json({ success: false, message: "Salon not found" });
     }
-    const services = await ServiceItem.find({ providerId: salon._id });
+    const services = await ServiceItem.find({ providerId: salon._id }).lean();
     res.status(200).json({ success: true, services });
     console.log("Services fetched successfully for user:", services);
   } catch (error) {
