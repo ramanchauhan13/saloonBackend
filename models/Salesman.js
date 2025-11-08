@@ -1,27 +1,15 @@
 import mongoose from 'mongoose';
 
+
+// salesman who sell salon app 
 const salesmanSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  phone: {
-    type: String,
-    required: true
-  },
-  location: {
-    type: String,
-    required: true
-  },
-  // from which salon  s
-  salon: { type: mongoose.Schema.Types.ObjectId, ref: "Salon", required: true },
-  referlID: { type: String, unique: true, required: true },
-});
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  referralId: { type: String, unique: true, required: true },
+  refersTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Salon', required: true }],
+  commissionRate: { type: Number, default: 0.05 }, // 5% commission by default
+  totalEarnings: { type: Number, default: 0 },
+  
+}, { timestamps: true });
 
 const Salesman = mongoose.model('Salesman', salesmanSchema);
 

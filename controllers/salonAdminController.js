@@ -31,7 +31,7 @@ export const getSaloonDetails = async (req, res) => {
 export const addSpecialist = async (req, res) => {
   try {
     const userId = req.userId;
-    const { name, expertise, experienceYears, certifications, contactNumber, image } = req.body;
+    const { name, expertise, experienceYears, certifications, contactNumber, image, availability } = req.body;
 
     // Verify salon exists
     const salon = await Salon.findOne({ owner: userId });
@@ -48,6 +48,7 @@ export const addSpecialist = async (req, res) => {
       certifications,
       contactNumber,
       image,
+      availability,
     });
 
     res.status(201).json({
