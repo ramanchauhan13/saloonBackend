@@ -44,11 +44,11 @@ export const addSpecialist = async (req, res) => {
       salon: salon._id,
       name,
       expertise,
-      experienceYears,
+      experienceYears: Number(experienceYears) || 0,
       certifications,
       contactNumber,
-      image,
-      availability,
+      image: image || "",
+      availability: availability || [],
     });
 
     res.status(201).json({

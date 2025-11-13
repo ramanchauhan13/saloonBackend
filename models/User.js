@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     enum: ["customer", "salon_owner", "independent_pro", "super_admin"],
     default: "customer"
   },
-  status: { type: String, enum: ["active", "blocked"], default: "active" },
+  status: { type: String, enum: ["Active", "Blocked"], default: "Active" },
   resetPasswordOTP: { type: String },
   resetPasswordExpire: { type: Date },
 }, { timestamps: true });

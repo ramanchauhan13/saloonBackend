@@ -5,14 +5,23 @@ const specialistSchema = new mongoose.Schema({
   salon: { type: mongoose.Schema.Types.ObjectId, ref: "Salon", required: true },
   name: { type: String, required: true },
   contactNumber: { type: String, required: true },
-  expertise: { type: String, enum: ["Hair", "Skin", "Makeup", "Massage", "Nails", "Other"], required: true },
+  expertise: [
+      {
+        type: String,
+        enum: ["Hair", "Skin", "Makeup", "Massage", "Nails", "Other"],
+        required: true,
+      },
+    ],
   experienceYears: { type: Number, default: 0 },
   image: { type: String },
   certifications: [String],
-  availability: {
-    days: [String], // e.g., ["Mon", "Wed", "Fri"]
-    time: { start: String, end: String },
-  },
+availability: [
+  {
+    day: { type: String, enum: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], required: true },
+    start: { type: String, required: true },
+    end: { type: String, required: true }
+  }
+]
 }, { timestamps: true });
 
 export default mongoose.model("Specialist", specialistSchema);
