@@ -13,6 +13,7 @@ import {
   updateOffer,
   getAllOffers,
   getAllUsers,
+  getUnverifiedSalons,
 } from "../controllers/superAdminController.js";
 
 const router = Router();
@@ -41,5 +42,7 @@ router.put("/update-offer/:offerId", authenticate, isSuperAdmin, updateOffer);
 router.get("/get-all-offers", authenticate, getAllOffers);
 
 router.get('/get-all-users', authenticate, isSuperAdmin, getAllUsers);
+
+router.get('/get-unverified-salons', authenticate, isSuperAdmin, getUnverifiedSalons);
 
 export default router;

@@ -409,3 +409,18 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+// get all unf=verified sdalon with their docu ents
+
+export const getUnverifiedSalons = async (req, res) => {
+  try {
+    const salons = await Salon.find({ verifiedByAdmin: false })
+      .populate("owner", "name email phone")
+      .lean();
+    res.status(200).json({ success: true, salons });
+    console.log("Unverified salons fetched:", salons);
+  } catch (error) {
+    console.error("Error fetching unverified salons:", error);
+    res.status(500).json({ message: "Server error while fetching unverified salons", error: error.message });
+  }
+};
