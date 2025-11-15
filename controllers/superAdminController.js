@@ -9,19 +9,29 @@ import IndependentProfessional from "../models/IndependentProfessional.js";
 import SubscriptionPlan from "../models/SubscriptionPlan.js";
 
 export const getAllSaloons = async (req, res) => {
+  console.log("Fetching all saloons");
   try {
+    const page = parseInt(req.query.page) || 1;       // which page
+    const limit = parseInt(req.query.limit) || 20;    // how many per page
+    const skip = (page - 1) * limit;
+
     const saloons = await Salon.find()
-      .populate(
-        "owner",
-        "name phone email whatsapp role isVerified govermentId"
-      )
-      .populate("specialistsData")
-      .populate("serviceItemData")
-      .populate("reviewData");
+      .skip(skip)
+      .limit(limit)
+      .populate("owner", "name phone email whatsapp role isVerified govermentId")
+      // .populate("specialistsData")
+      // .populate("serviceItemData")
+      // .populate("reviewData");
+
+    const totalCount = await Salon.countDocuments();
 
     res.status(200).json({
       success: true,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
       count: saloons.length,
+      totalCount,
       saloons,
     });
   } catch (error) {
@@ -361,9 +371,35 @@ export const assignSubscription = async (req, res) => {
 };
 
 export const getAllUsers = async (req, res) => {
+  console.log("Fetching all users with role 'customer'");
   try {
-    const users = await User.find({ role: "customer" }).select("-isVerified -govermentId").lean();
-    res.status(200).json({ success: true, users });
+    let { page = 1, limit = 10 } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 10;
+
+    const query = { role: "customer" };
+
+    // Total count for pagination
+    const totalCount = await User.countDocuments(query);
+
+    // Fetch paginated users
+    const users = await User.find(query)
+      .select("-isVerified -govermentId")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      users,
+      page,
+      totalPages: Math.ceil(totalCount / limit),
+      count: totalCount,
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({

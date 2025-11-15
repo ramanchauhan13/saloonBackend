@@ -225,3 +225,22 @@ export const giveReview = async (req, res) => {
 //   if (!latitude || !longitude) {
 //     return res.status(400).json({ message: "Latitude and Longitude are required" });
 //   }
+
+
+export const getSalonById = async (req, res) => {
+  try {
+    const { salonId } = req.params; 
+    const salon = await Salon.findById(salonId)
+      .populate("specialistsData")
+      .populate("serviceItemData")
+      .populate("reviewData");
+    if (!salon) {
+      return res.status(404).json({ message: "Salon not found" });
+    }
+
+    res.status(200).json({ success: true, data: salon });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+};
