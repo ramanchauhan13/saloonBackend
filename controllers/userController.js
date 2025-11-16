@@ -3,6 +3,7 @@ import Salon from "../models/Salon.js";
 import ServiceItem from "../models/ServiceItem.js";
 import Category from "../models/Category.js";
 import Review from "../models/Review.js"; // Use for virtual populate dont remove
+import Specialist from "../models/Specialist.js";
 
 // controllers/salonController.js
 export const getFeaturedSalons = async (req, res) => {
@@ -138,8 +139,8 @@ export const getHomeSalons = async (req, res) => {
     const result = {};
 
     for (const cat of categories) {
-      result[cat] = await Salon.find({ salonCategory: cat })
-        .sort({ createdAt: -1 })
+      result[cat] = await Salon.find({ salonCategory: cat }).select('_id shopName shopType salonCategory galleryImages location').
+        sort({ createdAt: -1 })
         .limit(5);
     }
 

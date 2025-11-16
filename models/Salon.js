@@ -25,10 +25,13 @@ const salonSchema = new mongoose.Schema({
 
   numberOfStaff: Number,
   openingDate: Date,
-  openingHours: {
-    open: String,
-    close: String
-  },
+  openingHours: [
+  {
+    day: { type: String, enum: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+    start: { type: String },
+    end: { type: String }
+  }
+],
   registrationNumber: String,
 
   // ✅ GeoJSON location
