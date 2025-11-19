@@ -1,20 +1,22 @@
 import { Router } from "express";
 import { authenticate, isSuperAdmin } from "../middlewares/authMiddleware.js";
+
 import {
-  verifyUser,
-  blockUser,
-  activateUser,
-  getAllSaloons,
   createCategory,
-  editCategory,
   getAllCategories,
+  editCategory,
+} from "../controllers/categoryController.js";
+
+import {
   createOffer,
   deleteOffer,
   updateOffer,
   getAllOffers,
-  getAllUsers,
-  getUnverifiedSalons,
-} from "../controllers/superAdminController.js";
+} from "../controllers/offerController.js";
+
+import { verifyUser, blockUser, activateUser,  getAllUsers } from "../controllers/userController.js";
+
+import { getAllSaloons, getUnverifiedSalons } from "../controllers/salonController.js";
 
 const router = Router();
 

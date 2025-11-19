@@ -5,151 +5,108 @@ import Category from "../models/Category.js";
 import Review from "../models/Review.js"; // Use for virtual populate dont remove
 import Specialist from "../models/Specialist.js";
 
-// controllers/salonController.js
-export const getFeaturedSalons = async (req, res) => {
+export const getAllUsers = async (req, res) => {
+  console.log("Fetching all users with role 'customer'");
   try {
-    const featuredSalons = await Salon.aggregate([
-      //  Only verified salons
-      // {
-      //   $match: { verifiedByAdmin: true },
-      // },
-      // 1️⃣ Join salon with reviews
-      {
-        $lookup: {
-          from: "reviews",
-          localField: "_id",
-          foreignField: "salon",
-          as: "reviews",
-        },
-      },
-      //  Join service items
-      {
-        $lookup: {
-          from: "serviceItem",
-          localField: "_id",
-          foreignField: "salon",
-          as: "serviceItemData",
-        },
-      },
-            // Join specialists
-      {
-        $lookup: {
-          from: "specialists",
-          localField: "_id",
-          foreignField: "salon",
-          as: "specialistsData",
-        },
-      },
-      // 2️⃣ Compute average rating
-      {
-        $addFields: {
-          averageRating: { $avg: "$reviews.rating" },
-          totalReviews: { $size: "$reviews" },
-        },
-      },
-      // 3️⃣ Sort by highest rating first
-      {
-        $sort: { averageRating: -1 },
-      },
-      // 4️⃣ Optionally limit results (e.g., top 10)
-      {
-        $limit: 10,
-      },
-    ]);
+    let { page = 1, limit = 10 } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
 
-    res.status(200).json({
-      message: "Featured salons retrieved successfully",
-      salons: featuredSalons,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 10;
 
+    const query = { role: "customer" };
 
-export const getAllCategories = async (req, res) => {
-  try {
-    const categories = await Category.find().lean();
+    // Total count for pagination
+    const totalCount = await User.countDocuments(query);
 
-    res.status(200).json({
-      message: "Categories retrieved successfully",
-      categories,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
-
-export const getNearbySalons = async (req, res) => {
-  try {
-    const { latitude, longitude, radiusInKm = 5 } = req.query;
-
-    if (!latitude || !longitude) {
-      return res.status(400).json({ success: false, message: "Latitude and longitude are required" });
-    }
-
-    const lat = parseFloat(latitude);
-    const lon = parseFloat(longitude);
-    const radius = parseFloat(radiusInKm);
-
-    if (isNaN(lat) || isNaN(lon) || isNaN(radius)) {
-      return res.status(400).json({ success: false, message: "Invalid latitude, longitude, or radius" });
-    }
-
-    const salons = await Salon.aggregate([
-      {
-        $geoNear: {
-          near: { type: "Point", coordinates: [lon, lat] }, // always [lon, lat]
-          distanceField: "distanceInMeters",
-          maxDistance: radius * 1000, // km → meters
-          spherical: true,
-          query: { verifiedByAdmin: true },
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          shopName: 1,
-          galleryImages: 1,
-          contactNumber: 1,
-          whatsappNumber: 1,
-          location: 1,
-          distanceInMeters: 1,
-        },
-      },
-      { $sort: { distanceInMeters: 1 } }, // nearest first
-    ]);
+    // Fetch paginated users
+    const users = await User.find(query)
+      .select("-isVerified -govermentId")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({
       success: true,
-      count: salons.length,
-      salons,
+      users,
+      page,
+      totalPages: Math.ceil(totalCount / limit),
+      count: totalCount,
     });
-  } catch (err) {
-    console.error("Error fetching nearby salons:", err);
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching users",
+      error: error.message,
+    });
   }
 };
 
-export const getHomeSalons = async (req, res) => {
+export const verifyUser = async (req, res) => {
   try {
-    const categories = ["menSalon", "beautyParlour", "unisex", "spa", "barbershop"];
-    const result = {};
+    const { userId } = req.params;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isVerified: true },
+      { new: true }
+    );
 
-    for (const cat of categories) {
-      result[cat] = await Salon.find({ salonCategory: cat }).select('_id shopName shopType salonCategory galleryImages location').
-        sort({ createdAt: -1 })
-        .limit(5);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ success: true, data: result });
-    console.log(result);
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(200).json({ message: "User verified By Admin", user });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
+
+export const blockUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { status: "blocked" },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User blocked successfully", user });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export const activateUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { status: "active" },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User activated successfully", user });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 
 export const uploadDocument = async (req, res) => {
   try {
@@ -227,21 +184,3 @@ export const giveReview = async (req, res) => {
 //     return res.status(400).json({ message: "Latitude and Longitude are required" });
 //   }
 
-
-export const getSalonById = async (req, res) => {
-  try {
-    const { salonId } = req.params; 
-    const salon = await Salon.findById(salonId)
-      .populate("specialistsData")
-      .populate("serviceItemData")
-      .populate("reviewData");
-    if (!salon) {
-      return res.status(404).json({ message: "Salon not found" });
-    }
-
-    res.status(200).json({ success: true, data: salon });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
-  }
-};

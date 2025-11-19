@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { giveReview, getFeaturedSalons, getNearbySalons, getHomeSalons, getSalonById } from '../controllers/userController.js';
-import { getAllCategories } from '../controllers/userController.js';
+import { giveReview } from '../controllers/userController.js';
+import { getAllCategories } from '../controllers/categoryController.js';
+import { getFeaturedSalons, getNearbySalons, getHomeSalons, getSalonById } from '../controllers/salonController.js';
 
 const router = Router();
 

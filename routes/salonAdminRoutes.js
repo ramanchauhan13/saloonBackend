@@ -1,20 +1,25 @@
 import { Router } from "express";
+
 import {
   addSpecialist,
   getSpecialistsBySalon,
   updateSpecialist,
   deleteSpecialist,
+} from "../controllers/specialistController.js";
 
-  getSaloonDetails,
-
-  addOrUpdateSalonLocation,
-  checkSubscriptionStatus,
-
+import {
   createServiceItem,
   updateServiceItem,
   deleteServiceItem,
   getServiceItemsBySalon,
-} from "../controllers/salonAdminController.js";
+} from "../controllers/serviceItemController.js";
+
+import { addOrUpdateSalonLocation } from "../controllers/locationController.js";
+
+import { checkSubscriptionStatus } from "../controllers/subscriptionController.js";
+
+import { getSaloonDetails } from "../controllers/salonController.js";
+
 import {
   authenticate,
   isSalonOwner,
