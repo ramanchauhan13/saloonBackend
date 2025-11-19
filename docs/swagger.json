@@ -1,0 +1,230 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Salon App API",
+    "version": "1.0.0",
+    "description": "API documentation for Salon app (Auth + User routes)"
+  },
+  "tags": [
+    { "name": "Auth", "description": "Authentication and user management" },
+    { "name": "Users", "description": "User-facing endpoints for salons, reviews, and categories" }
+  ],
+  "paths": {
+    "/api/auth/signup": {
+      "post": {
+        "summary": "Register a new user, salon owner, or independent professional",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "password": { "type": "string" },
+                  "role": { "type": "string", "enum": ["user", "salon_owner", "independent_pro"] },
+                  "salonData": { "type": "object", "nullable": true },
+                  "independentData": { "type": "object", "nullable": true }
+                },
+                "required": ["name", "email", "phone", "password", "role"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Registration successful" },
+          "400": { "description": "Validation error / user exists" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login user and return JWT token",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "400": { "description": "Invalid email or password" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "summary": "Send OTP to reset password",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "email": { "type": "string" } }, "required": ["email"] }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OTP sent to email" },
+          "404": { "description": "User not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/auth/verify-otp": {
+      "post": {
+        "summary": "Verify OTP for password reset",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "otp": { "type": "string" }
+                },
+                "required": ["email", "otp"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OTP verified successfully" },
+          "400": { "description": "Invalid or expired OTP" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "summary": "Reset password using OTP",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "newPassword": { "type": "string" }
+                },
+                "required": ["email", "newPassword"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset successfully" },
+          "400": { "description": "OTP expired or invalid" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/user/get-featured-salons": {
+      "get": {
+        "summary": "Get top featured salons",
+        "tags": ["Users"],
+        "responses": {
+          "200": { "description": "List of featured salons" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/user/get-nearby-salons": {
+      "get": {
+        "summary": "Get nearby salons based on latitude, longitude, and optional radius",
+        "tags": ["Users"],
+        "parameters": [
+          { "name": "latitude", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "longitude", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "radiusInKm", "in": "query", "required": false, "schema": { "type": "number", "default": 5 } }
+        ],
+        "responses": {
+          "200": { "description": "List of nearby salons" },
+          "400": { "description": "Missing or invalid coordinates" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/user/get-home-salons": {
+      "get": {
+        "summary": "Get salons for home page (by category)",
+        "tags": ["Users"],
+        "responses": {
+          "200": { "description": "Salons grouped by category" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/user/get-all-categories": {
+      "get": {
+        "summary": "Get all salon categories",
+        "tags": ["Users"],
+        "responses": {
+          "200": { "description": "List of categories" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/user/get-salon/{salonId}": {
+      "get": {
+        "summary": "Get salon details by ID",
+        "tags": ["Users"],
+        "parameters": [
+          { "name": "salonId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Salon details returned" },
+          "404": { "description": "Salon not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/user/give-review": {
+      "post": {
+        "summary": "Submit a review for a salon",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "salonId": { "type": "string" },
+                  "rating": { "type": "number" },
+                  "comment": { "type": "string" },
+                  "images": { "type": "array", "items": { "type": "string" } }
+                },
+                "required": ["salonId", "rating", "comment"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Review submitted successfully" },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Server error" }
+        }
+      }
+    }
+  }
+}
