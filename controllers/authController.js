@@ -21,6 +21,7 @@ const generateToken = (user) => {
 
 export const signup = async (req, res) => {
   console.log("Signup request body:", req.body);
+
   try {
     const { name, email, phone, password, role, salonData, independentData } = req.body;
 
@@ -31,76 +32,82 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Name, email, phone, password are required" });
     }
 
-    // Check for existing email
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // Check for existing phone
     const existingPhone = await User.findOne({ phone });
     if (existingPhone) {
       return res.status(400).json({ message: "Phone number already registered" });
     }
 
-    // -----------------------
-    // Create new user
-    // -----------------------
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, phone, password: hashedPassword, role });
-
+    // ===========================
+    // VALIDATE ROLE BEFORE CREATE
+    // ===========================
     let roleDetails = null;
 
-    // -----------------------
-    // Salon owner validation
-    // -----------------------
     if (role === "salon_owner") {
+
       if (!salonData) {
         return res.status(400).json({ message: "Salon data is required for salon owner" });
       }
 
-      const requiredSalonFields = [
-        "shopType", "shopName", "salonCategory", "location"
-      ];
-      for (const field of requiredSalonFields) {
+      const requiredFields = ["shopType", "shopName", "salonCategory", "location"];
+      for (const field of requiredFields) {
         if (!salonData[field]) {
           return res.status(400).json({ message: `Salon field '${field}' is required` });
         }
       }
 
-      // Government ID check
+      // Check government ID
       const govId = salonData.governmentId;
       if (!govId || !govId.idType || !govId.idNumber || !govId.idImageUrl) {
-        return res.status(400).json({ message: "Government ID (idType, idNumber, idImageUrl) is required for salon owner" });
+        return res.status(400).json({
+          message: "Government ID (idType, idNumber, idImageUrl) is required for salon owner"
+        });
+      }
+    }
+
+    if (role === "independent_pro") {
+      if (!independentData) {
+        return res.status(400).json({ message: "Independent profile data required" });
       }
 
-      // Create salon
+      const requiredFields = ["specialty", "experience"];
+      for (const field of requiredFields) {
+        if (!independentData[field]) {
+          return res.status(400).json({ message: `Independent profile field '${field}' is required` });
+        }
+      }
+    }
+
+    // ===========================
+    // NOW CREATE USER
+    // ===========================
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      role,
+    });
+
+    // ===========================
+    // CREATE ROLE DOCUMENT
+    // ===========================
+    if (role === "salon_owner") {
       roleDetails = await Salon.create({ ...salonData, owner: user._id });
       user.salonId = roleDetails._id;
       await user.save();
     }
 
-    // -----------------------
-    // Independent professional validation
-    // -----------------------
     if (role === "independent_pro") {
-      if (!independentData) {
-        return res.status(400).json({ message: "Independent professional data is required" });
-      }
-
-      const requiredIndependentFields = ["specialty", "experience"];
-      for (const field of requiredIndependentFields) {
-        if (!independentData[field]) {
-          return res.status(400).json({ message: `Independent profile field '${field}' is required` });
-        }
-      }
-
       roleDetails = await IndependentProfessional.create({ ...independentData, user: user._id });
     }
 
-    // -----------------------
-    // Generate token and respond
-    // -----------------------
+    // Generate token
     const token = generateToken(user);
 
     return res.status(201).json({
@@ -121,6 +128,110 @@ export const signup = async (req, res) => {
     return res.status(500).json({ message: "Registration failed", error: err.message });
   }
 };
+
+
+// export const signup = async (req, res) => {
+//   console.log("Signup request body:", req.body);
+//   try {
+//     const { name, email, phone, password, role, salonData, independentData } = req.body;
+
+//     // -----------------------
+//     // Basic validations
+//     // -----------------------
+//     if (!name || !email || !phone || !password) {
+//       return res.status(400).json({ message: "Name, email, phone, password are required" });
+//     }
+
+//     // Check for existing email
+//     const existingEmail = await User.findOne({ email });
+//     if (existingEmail) {
+//       return res.status(400).json({ message: "Email already registered" });
+//     }
+
+//     // Check for existing phone
+//     const existingPhone = await User.findOne({ phone });
+//     if (existingPhone) {
+//       return res.status(400).json({ message: "Phone number already registered" });
+//     }
+
+//     // -----------------------
+//     // Create new user
+//     // -----------------------
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const user = await User.create({ name, email, phone, password: hashedPassword, role });
+
+//     let roleDetails = null;
+
+//     // -----------------------
+//     // Salon owner validation
+//     // -----------------------
+//     if (role === "salon_owner") {
+//       if (!salonData) {
+//         return res.status(400).json({ message: "Salon data is required for salon owner" });
+//       }
+
+//       const requiredSalonFields = [
+//         "shopType", "shopName", "salonCategory", "location"
+//       ];
+//       for (const field of requiredSalonFields) {
+//         if (!salonData[field]) {
+//           return res.status(400).json({ message: `Salon field '${field}' is required` });
+//         }
+//       }
+
+//       // Government ID check
+//       const govId = salonData.governmentId;
+//       if (!govId || !govId.idType || !govId.idNumber || !govId.idImageUrl) {
+//         return res.status(400).json({ message: "Government ID (idType, idNumber, idImageUrl) is required for salon owner" });
+//       }
+
+//       // Create salon
+//       roleDetails = await Salon.create({ ...salonData, owner: user._id });
+//       user.salonId = roleDetails._id;
+//       await user.save();
+//     }
+
+//     // -----------------------
+//     // Independent professional validation
+//     // -----------------------
+//     if (role === "independent_pro") {
+//       if (!independentData) {
+//         return res.status(400).json({ message: "Independent professional data is required" });
+//       }
+
+//       const requiredIndependentFields = ["specialty", "experience"];
+//       for (const field of requiredIndependentFields) {
+//         if (!independentData[field]) {
+//           return res.status(400).json({ message: `Independent profile field '${field}' is required` });
+//         }
+//       }
+
+//       roleDetails = await IndependentProfessional.create({ ...independentData, user: user._id });
+//     }
+
+//     // -----------------------
+//     // Generate token and respond
+//     // -----------------------
+//     const token = generateToken(user);
+
+//     return res.status(201).json({
+//       message: "Registration successful",
+//       user: {
+//         ...user.toObject(),
+//         ...(role === "salon_owner"
+//           ? { salon: roleDetails }
+//           : role === "independent_pro"
+//           ? { independentProfile: roleDetails }
+//           : {}),
+//       },
+//       token,
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ message: "Registration failed", error: err.message });
+//   }
+// };
 
 
 // REGISTER USER / SALON / PROFESSIONAL
