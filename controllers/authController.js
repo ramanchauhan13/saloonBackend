@@ -27,8 +27,8 @@ export const signup = async (req, res) => {
     // -----------------------
     // Basic validations
     // -----------------------
-    if (!name || !email || !phone || !password || !role) {
-      return res.status(400).json({ message: "Name, email, phone, password, and role are required" });
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ message: "Name, email, phone, password are required" });
     }
 
     // Check for existing email
