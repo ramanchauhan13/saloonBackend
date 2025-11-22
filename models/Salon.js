@@ -7,7 +7,7 @@ const partnerSchema = new mongoose.Schema({
   whatsappNumber: String
 });
 
-const salonSchema = new mongoose.Schema({
+const salonSchema = new mongoose. Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   shopType: { type: String, enum: ["personal", "partnership"], required: true },
   partners: [partnerSchema],
@@ -56,7 +56,7 @@ const salonSchema = new mongoose.Schema({
     galleryImages: [String],
   // ratings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
    governmentId: {
-    idType: { type: String, enum: ["Aadhaar", "PAN", "DL"], required: true },
+    idType: { type: String, enum: ["Aadhar", "PAN", "DL"], required: true },
     idNumber: { type: String, required: true },
     idImageUrl: { type: String, required: true },
   },
