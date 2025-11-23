@@ -52,7 +52,6 @@ export const assignSubscription = async (req, res) => {
   }
 };
 
-
 export const checkSubscriptionStatus = async (req, res) => {
   console.log("Checking subscription status for user:", req.userId);
   const userId = req.userId;
@@ -79,3 +78,44 @@ export const checkSubscriptionStatus = async (req, res) => {
   }
 };
 
+export const subscribePlan = async (req, res) => {
+  try {
+    const { planId } = req.body;
+    const userId = req.userId;
+
+    const plan = await SubscriptionPlan.findById(planId);
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
+    const salon = await Salon.findOne({ owner: userId });
+    if (!salon) return res.status(404).json({ message: "Salon not found" });
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + plan.durationInDays);
+    salon.subscription = {
+      planId,
+      startDate,
+      endDate,
+      paymentStatus: "paid",
+    };
+    await salon.save();
+    console.log("Subscription updated for salon:", salon._id);
+    res.status(200).json({ success: true, message: "Subscription assigned successfully", startDate, endDate });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getSubscriptionPlans = async (req, res) => {
+  try {
+    const plans = await SubscriptionPlan.find().lean();
+    if(plans.length === 0 || !plans) {
+      console.log("No subscription plans found.");
+      return res.status(404).json({ message: "No subscription plans available." });
+    }
+    console.log("Fetched subscription plans:", plans);
+    res.status(200).json({ plans });
+  } catch (error) {
+    console.error("Error fetching subscription plans:", error);
+    res.status(500).json({ message: "Server error while fetching subscription plans." });
+  }
+};

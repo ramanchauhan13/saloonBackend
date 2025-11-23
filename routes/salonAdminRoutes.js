@@ -16,7 +16,7 @@ import {
 
 import { addOrUpdateSalonLocation } from "../controllers/locationController.js";
 
-import { checkSubscriptionStatus } from "../controllers/subscriptionController.js";
+import { checkSubscriptionStatus, subscribePlan, getSubscriptionPlans } from "../controllers/subscriptionController.js";
 
 import { getSaloonDetails } from "../controllers/salonController.js";
 
@@ -48,7 +48,9 @@ router.delete("/delete-specialist/:specialistId", authenticate, isSalonOwner, is
 
 router.patch("/add-location/:salonId", addOrUpdateSalonLocation);
 
+router.get("/get-subscription-plans", authenticate, isSalonOwner, getSubscriptionPlans);
 router.get("/subscription-status", authenticate, isSalonOwner, checkSubscriptionStatus);
+router.patch("/subscribe-plan", authenticate, isSalonOwner, subscribePlan);
 
 router.post("/create-service-item", authenticate, isSalonOwner, isSalonVerifiedByAdmin, createServiceItem);
 router.put("/update-service-item/:serviceId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, updateServiceItem);

@@ -129,7 +129,6 @@ export const signup = async (req, res) => {
   }
 };
 
-
 // export const signup = async (req, res) => {
 //   console.log("Signup request body:", req.body);
 //   try {
@@ -445,5 +444,100 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// In-memory OTP store
+// Format: { "otpValue": { mobile: "9876543210", expiresAt: timestamp } }
+const otpStore = {};
+
+// Generate OTP
+
+// ----------------- SEND OTP -----------------
+export const sendOtp = async (req, res) => {
+  try {
+    const { mobile } = req.body;
+    if (!mobile) return res.status(400).json({ message: "Mobile is required" });
+
+    const otp = generateOTP(6);
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes expiry
+
+    // Store OTP internally
+    otpStore[otp] = { mobile, expiresAt };
+
+    // TODO: Send OTP via SMS gateway
+    console.log(`OTP sent to ${mobile}: ${otp}`);
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ----------------- VERIFY OTP -----------------
+export const verifyOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) return res.status(400).json({ message: "OTP is required" });
+
+    const record = otpStore[otp];
+    if (!record) return res.status(400).json({ message: "Invalid OTP" });
+
+    if (Date.now() > record.expiresAt) {
+      delete otpStore[otp];
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    const mobile = record.mobile;
+
+    // OTP verified → delete OTP
+    delete otpStore[otp];
+
+    // Check if user exists
+    const user = await User.findOne({ mobile });
+
+    if (user) {
+      // Existing user → generate JWT token for login
+      const token = jwt.sign({ userId: user._id, mobile }, JWT_SECRET, { expiresIn: "7d" });
+      return res.json({ message: "Login successful", existing: true, token });
+    } else {
+      // New user → generate short-lived token for registration
+      const regToken = jwt.sign({ mobile }, JWT_SECRET, { expiresIn: "10m" });
+      return res.json({ message: "OTP verified. Complete registration", existing: false, token: regToken });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ----------------- COMPLETE NEW USER -----------------
+export const completeNewUser = async (req, res) => {
+  try {
+    const { token, name, email, password, role } = req.body;
+    if (!token) return res.status(400).json({ message: "Token is required" });
+
+    // Verify registration token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const mobile = decoded.mobile;
+
+    // Optional: check if user already exists
+    const existingUser = await User.findOne({ mobile });
+    if (existingUser) return res.status(400).json({ message: "User already exists" });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({ name, email, password: hashedPassword, role, mobile });
+
+    // Generate login token for the new user
+    const loginToken = jwt.sign({ userId: user._id, mobile }, JWT_SECRET, { expiresIn: "7d" });
+
+    res.status(201).json({ message: "User created successfully", user, token: loginToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 
 export default router;
