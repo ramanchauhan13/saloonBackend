@@ -1,4 +1,5 @@
 import Salon from "../models/Salon.js";
+import ServiceItem from "../models/ServiceItem.js";
 
 export const getFeaturedSalons = async (req, res) => {
   try {
@@ -150,23 +151,86 @@ export const getNearbySalons = async (req, res) => {
   }
 };
 
+// export const getHomeSalons = async (req, res) => {
+//   try {
+//     const categories = ["menSalon", "beautyParlour", "unisex", "spa", "barbershop"];
+//     const result = {};
+
+//     for (const cat of categories) {
+//       result[cat] = await Salon.find({ salonCategory: cat }).select('_id shopName shopType salonCategory galleryImages location').
+//         sort({ createdAt: -1 })
+//         .limit(5);
+//     }
+
+//     res.json({ success: true, data: result });
+//     console.log(result);
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
 export const getHomeSalons = async (req, res) => {
   try {
-    const categories = ["menSalon", "beautyParlour", "unisex", "spa", "barbershop"];
+    const categories = ["men", "women", "beautyParlour", "unisex", "spa", "barbershop"];
     const result = {};
 
     for (const cat of categories) {
-      result[cat] = await Salon.find({ salonCategory: cat }).select('_id shopName shopType salonCategory galleryImages location').
-        sort({ createdAt: -1 })
-        .limit(5);
+
+      // Fetch salons of this category
+      const salons = await Salon.find({ salonCategory: cat })
+        .select("_id shopName shopType salonCategory galleryImages location")
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean();
+
+      // For each salon, get unique service categories
+      for (let salon of salons) {
+        const categoryList = await ServiceItem.aggregate([
+          {
+            $match: {
+              providerType: "salon",
+              providerId: salon._id,
+            }
+          },
+          {
+            $lookup: {
+              from: "categories",
+              localField: "category",
+              foreignField: "_id",
+              as: "categoryData",
+            }
+          },
+          { $unwind: "$categoryData" },
+
+          // Get unique categories only
+          {
+            $group: {
+              _id: "$categoryData._id",
+              name: { $first: "$categoryData.name" }
+            }
+          }
+        ]);
+
+        salon.categories = categoryList;
+      }
+
+      result[cat] = salons;
     }
 
-    res.json({ success: true, data: result });
-    console.log(result);
+    return res.json({
+      success: true,
+      data: result,
+    });
+
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
+
 
 export const getSalonById = async (req, res) => {
   try {
