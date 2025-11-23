@@ -19,7 +19,7 @@ const salonSchema = new mongoose. Schema({
 
    salonCategory: {
     type: String,
-    enum: ["men", "women", "beautyParlour", "unisex", "spa", "barbershop"],
+    enum: ["men", "beautyParlour", "unisex", "spa"],
     required: true,
   },
 

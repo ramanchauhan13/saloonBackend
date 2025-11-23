@@ -151,27 +151,9 @@ export const getNearbySalons = async (req, res) => {
   }
 };
 
-// export const getHomeSalons = async (req, res) => {
-//   try {
-//     const categories = ["menSalon", "beautyParlour", "unisex", "spa", "barbershop"];
-//     const result = {};
-
-//     for (const cat of categories) {
-//       result[cat] = await Salon.find({ salonCategory: cat }).select('_id shopName shopType salonCategory galleryImages location').
-//         sort({ createdAt: -1 })
-//         .limit(5);
-//     }
-
-//     res.json({ success: true, data: result });
-//     console.log(result);
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
-
 export const getHomeSalons = async (req, res) => {
   try {
-    const categories = ["men", "women", "beautyParlour", "unisex", "spa", "barbershop"];
+    const categories = ["men", "beautyParlour", "unisex", "spa"];
     const result = {};
 
     for (const cat of categories) {
