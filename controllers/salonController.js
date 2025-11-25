@@ -180,12 +180,12 @@ export const getHomeSalonsByCategory = async (req, res) => {
             }
           },
           { $unwind: "$categoryData" },
-          { $group: { _id: "$categoryData._id", name: { $first: "$categoryData.name" } } }
+          { $group: { _id: "$categoryData._id", name: { $first: "$categoryData.name" } } },
+          { $limit: 3 },
         ]);
         return { ...salon, categories: categoryList };
       })
     );
-    console.log("Salons with categories:", salonsWithCategories);
     return res.json({ success: true, data: salonsWithCategories });
 
   } catch (err) {
