@@ -151,31 +151,28 @@ export const getNearbySalons = async (req, res) => {
   }
 };
 
-export const getHomeSalons = async (req, res) => {
+// GET /salons?category=men
+export const getHomeSalonsByCategory = async (req, res) => {
+  console.log("Fetching home salons by category");
   try {
-    const categories = ["men", "beautyParlour", "unisex", "spa"];
-    const result = {};
+    const { category } = req.query; // men / women / beautyParlour / unisex / spa
+    console.log("Fetching home salons for category:", category);
 
-    for (const cat of categories) {
+    if (!category) {
+      return res.status(400).json({ success: false, message: "Category required" });
+    }
 
-      // Fetch salons of this category
-      const salons = await Salon.find({ salonCategory: cat })
-        .select("_id shopName shopType salonCategory galleryImages location")
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .lean();
+    const salons = await Salon.find({ salonCategory: category })
+      .select("_id shopName shopType salonCategory galleryImages location")
+      .sort({ createdAt: -1 })
+      .lean();
 
-      // For each salon, get unique service categories
-      for (let salon of salons) {
+    // Attach unique service categories to each salon
+    const salonsWithCategories = await Promise.all(
+      salons.map(async (salon) => {
         const categoryList = await ServiceItem.aggregate([
-          {
-            $match: {
-              providerType: "salon",
-              providerId: salon._id,
-            }
-          },
-          {
-            $lookup: {
+          { $match: { providerType: "salon", providerId: salon._id } },
+          { $lookup: {
               from: "categories",
               localField: "category",
               foreignField: "_id",
@@ -183,35 +180,20 @@ export const getHomeSalons = async (req, res) => {
             }
           },
           { $unwind: "$categoryData" },
-
-          // Get unique categories only
-          {
-            $group: {
-              _id: "$categoryData._id",
-              name: { $first: "$categoryData.name" }
-            }
-          }
+          { $group: { _id: "$categoryData._id", name: { $first: "$categoryData.name" } } }
         ]);
-
-        salon.categories = categoryList;
-      }
-
-      result[cat] = salons;
-    }
-
-    return res.json({
-      success: true,
-      data: result,
-    });
+        return { ...salon, categories: categoryList };
+      })
+    );
+    console.log("Salons with categories:", salonsWithCategories);
+    return res.json({ success: true, data: salonsWithCategories });
 
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 
 export const getSalonById = async (req, res) => {
