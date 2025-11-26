@@ -15,7 +15,7 @@ const serviceItemSchema = new mongoose.Schema({
     enum: ["salon", "independent"],
     required: true
   },
-  providerId: { type: mongoose.Schema.Types.ObjectId, required: true }, // points to Salon or IndependentProfessional
+  providerId: { type: mongoose.Schema.Types.ObjectId, required: true },
 }, { timestamps: true });
 
 export default mongoose.model("ServiceItem", serviceItemSchema);

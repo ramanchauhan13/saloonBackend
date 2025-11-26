@@ -1,5 +1,6 @@
 import Salon from "../models/Salon.js";
 import ServiceItem from "../models/ServiceItem.js";
+import Specialist from "../models/Specialist.js";
 
 export const getFeaturedSalons = async (req, res) => {
   try {
@@ -198,21 +199,53 @@ export const getHomeSalonsByCategory = async (req, res) => {
 
 export const getSalonById = async (req, res) => {
   try {
-    const { salonId } = req.params; 
+    const { salonId } = req.params;
+
+    // Fetch the salon
     const salon = await Salon.findById(salonId)
       .populate("specialistsData")
-      .populate("serviceItemData")
       .populate("reviewData");
+
     if (!salon) {
       return res.status(404).json({ message: "Salon not found" });
     }
 
-    res.status(200).json({ success: true, data: salon });
+    // Aggregate service categories
+    const serviceCategories = await ServiceItem.aggregate([
+      { $match: { providerType: "salon", providerId: salon._id } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "categoryData",
+        },
+      },
+      { $unwind: "$categoryData" },
+      {
+        $group: {
+          _id: "$categoryData._id",
+          name: { $first: "$categoryData.name" },
+        },
+      },
+    ]);
+
+    console.log("Fetched salon with categories:", salon);
+
+    // Send salon + service categories in response
+    res.status(200).json({
+      success: true,
+      data: {
+        ...salon.toObject(), // convert Mongoose document to plain JS object
+        serviceCategories,   // include aggregated categories
+      },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 };
+
 
 
 export const getSaloonDetails = async (req, res) => {
