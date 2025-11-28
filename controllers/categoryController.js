@@ -3,39 +3,55 @@ import Category from "../models/Category.js";
 // dont accept duplicate category names check with lowercase also
 export const createCategory = async (req, res) => {
   try {
-    const { name, icon } = req.body;
+    const { name, gender, icon } = req.body;
 
-    // Check for duplicate category names
+    // Check only SAME name + SAME gender
     const existingCategory = await Category.findOne({
-      name: { $regex: new RegExp(`^${name}$`, "i") },
+      name: { $regex: `^${name}$`, $options: "i" },
+      gender: gender,
     });
+
     if (existingCategory) {
-      return res.status(400).json({ message: "Category already exists" });
+      return res
+        .status(400)
+        .json({ message: "Category already exists for this gender" });
     }
 
-    const category = new Category({ name, icon });
+    const category = new Category({ name, gender, icon });
     await category.save();
-    res
-      .status(201)
-      .json({ message: "Category created successfully", category });
+
+    return res.status(201).json({
+      message: "Category created successfully",
+      category,
+    });
   } catch (error) {
     console.error("Error creating category:", error);
-    res.status(500).json({
+
+    // Handle Mongo duplicate error too
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Category already exists for this gender" });
+    }
+
+    return res.status(500).json({
       message: "Server error while creating category",
       error: error.message,
     });
   }
 };
 
+
 export const editCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const { name, icon } = req.body;
+    const { name, gender, icon } = req.body;
 
-    // 1️⃣ Check for duplicate name (case-insensitive) excluding the current category
+    // 1️⃣ Check for duplicate name (case-insensitive) only in the current category
     const existingCategory = await Category.findOne({
       _id: { $ne: categoryId }, // exclude current category
       name: { $regex: `^${name}$`, $options: "i" }, // case-insensitive
+      gender: gender
     });
 
     if (existingCategory) {
@@ -67,17 +83,34 @@ export const editCategory = async (req, res) => {
 
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find().lean();
-    if(!categories || categories.length === 0){
+    const { gender } = req.query;
+
+    let filter = {};
+
+    // If gender is provided, apply filter
+    if (gender === "women" || gender === "men") {
+      filter.gender = gender;
+    }
+
+    const categories = await Category.find(filter).lean();
+
+    if (!categories || categories.length === 0) {
       return res.status(404).json({ message: "No categories found" });
     }
-    res.status(200).json({ success: true, categories });
+
+    return res.status(200).json({
+      success: true,
+      genderApplied: gender || "none",
+      categories,
+    });
+
   } catch (error) {
     console.error("Error fetching categories:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error while fetching categories",
       error: error.message,
     });
   }
 };
+

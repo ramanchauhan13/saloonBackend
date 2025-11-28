@@ -156,7 +156,7 @@ export const getNearbySalons = async (req, res) => {
 export const getHomeSalonsByCategory = async (req, res) => {
   console.log("Fetching home salons by category");
   try {
-    const { category } = req.query; // men / women / beautyParlour / unisex / spa
+    const { category } = req.query; // men / women  / unisex 
     console.log("Fetching home salons for category:", category);
 
     if (!category) {
@@ -194,7 +194,6 @@ export const getHomeSalonsByCategory = async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 
 export const getSalonById = async (req, res) => {
