@@ -175,6 +175,28 @@ export const login = async (req, res) => {
   }
 };
 
+export const toggleOffersHomeService = async (req, res) => {
+
+  console.log("Toggling home service for user:", req.userId);
+  try {
+    const userId = req.userId;
+    const salon = await Salon.findOne({ owner: userId });
+    if (!salon) {
+      return res.status(404).json({ message: "Salon not found" });
+    }
+
+    salon.offersHomeService = !salon.offersHomeService;
+    await salon.save();
+
+    res.status(200).json({
+      message: "Home service status updated successfully",
+      offersHomeService: salon.offersHomeService,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update home service status", error: err.message });
+  }
+};
 
 // ===== FORGOT PASSWORD (SEND OTP) =====
 export const forgotPassword = async (req, res) => {

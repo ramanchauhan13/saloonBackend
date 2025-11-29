@@ -25,6 +25,7 @@ import {
   isSalonOwner,
   isSalonVerifiedByAdmin,
 } from "../middlewares/authMiddleware.js";
+import { toggleOffersHomeService } from "../controllers/authController.js";
 
 const router = Router();
 
@@ -56,5 +57,9 @@ router.post("/create-service-item", authenticate, isSalonOwner, isSalonVerifiedB
 router.put("/update-service-item/:serviceId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, updateServiceItem);
 router.delete("/delete-service-item/:serviceId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, deleteServiceItem);
 router.get("/get-service-items", authenticate, isSalonOwner, isSalonVerifiedByAdmin, getServiceItemsBySalon);
+
+
+router.patch("/toggle-home-service", authenticate, isSalonOwner, isSalonVerifiedByAdmin, toggleOffersHomeService);
+
 
 export default router;

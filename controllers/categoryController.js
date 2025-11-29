@@ -1,4 +1,6 @@
 import Category from "../models/Category.js";
+import ServiceItem from "../models/ServiceItem.js";
+
 
 // dont accept duplicate category names check with lowercase also
 export const createCategory = async (req, res) => {
@@ -111,6 +113,44 @@ export const getAllCategories = async (req, res) => {
       message: "Server error while fetching categories",
       error: error.message,
     });
+  }
+};
+
+
+/**
+ * Get all service items grouped by category for a specific salon
+ * @route GET /api/service-items/by-salon/:salonId
+ */
+export const getServiceItemsBySalon = async (req, res) => {
+  try {
+    const { salonId } = req.params;
+
+    if (!salonId) {
+      return res.status(400).json({ message: "Salon ID is required" });
+    }
+
+    // Fetch all active service items for the salon
+    const serviceItems = await ServiceItem.find({ providerId: salonId, status: "active" })
+      .populate("category", "name") // populate category name
+      .lean();
+
+    // Group service items by category
+    const groupedByCategory = serviceItems.reduce((acc, item) => {
+      const categoryName = item.category?.name || "Uncategorized";
+      if (!acc[categoryName]) {
+        acc[categoryName] = [];
+      }
+      acc[categoryName].push(item);
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      salonId,
+      categories: groupedByCategory
+    });
+  } catch (error) {
+    console.error("Error fetching service items by salon:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

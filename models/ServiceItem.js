@@ -4,6 +4,11 @@ import mongoose from "mongoose";
 const serviceItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+  gender: {
+    type: String,
+    enum: ["men", "women", "unisex"],
+    required: true
+  },
   price: { type: Number, required: true },
   durationMins: { type: Number, default: 30 },
   discountPercent: { type: Number, default: 0 },

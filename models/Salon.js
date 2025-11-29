@@ -22,7 +22,7 @@ const salonSchema = new mongoose. Schema({
     enum: ["men", "beautyParlour", "unisex", "spa"],
     required: true,
   },
-
+  offersHomeService: { type: Boolean, default: false },
   numberOfStaff: Number,
   openingDate: Date,
   openingHours: [
