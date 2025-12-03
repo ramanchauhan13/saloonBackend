@@ -82,3 +82,4 @@ export const getAllSalesmen = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch salesmen.", error: error.message });
     }
 };
+

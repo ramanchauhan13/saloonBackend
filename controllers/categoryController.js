@@ -1,7 +1,6 @@
 import Category from "../models/Category.js";
 import ServiceItem from "../models/ServiceItem.js";
 
-
 // dont accept duplicate category names check with lowercase also
 export const createCategory = async (req, res) => {
   try {

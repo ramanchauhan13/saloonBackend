@@ -245,8 +245,6 @@ export const getSalonById = async (req, res) => {
   }
 };
 
-
-
 export const getSaloonDetails = async (req, res) => {
   try {
     const userId = req.userId;
@@ -287,3 +285,22 @@ export const getUnverifiedSalons = async (req, res) => {
   }
 };
 
+
+export const verifySalonByAdmin = async (req, res) => {
+  try {
+    const { salonId } = req.params;
+    const salon = await Salon.findByIdAndUpdate(
+      salonId,
+      { verifiedByAdmin: true },
+      { new: true }
+    );
+    if (!salon) {
+      return res.status(404).json({ message: "Salon not found" });
+    }
+
+    res.status(200).json({ success: true, salon });
+  } catch (error) {
+    console.error("Error verifying salon:", error);
+    res.status(500).json({ message: "Server error while verifying salon", error: error.message });
+  }
+};

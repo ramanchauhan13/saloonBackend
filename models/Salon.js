@@ -56,7 +56,7 @@ const salonSchema = new mongoose. Schema({
     galleryImages: [String],
   // ratings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
    governmentId: {
-    idType: { type: String, enum: ["Aadhar", "PAN", "DL"], required: true },
+    idType: { type: String, enum: ["Aadhar", "PAN", "DL", "GST Certificate"], required: true },
     idNumber: { type: String, required: true },
     idImageUrl: { type: String, required: true },
   },

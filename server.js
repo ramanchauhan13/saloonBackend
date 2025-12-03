@@ -17,6 +17,7 @@ import authRoutes from './routes/authRoutes.js';
 import salonAdminRoutes from './routes/salonAdminRoutes.js';
 import superAdminRoutes from './routes/superAdminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import independentProRoutes from './routes/independentProRoutes.js';
 import salesmanRoutes from './routes/salesmanRoutes.js';
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/salon-admin', salonAdminRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/independent-pro', independentProRoutes);
 app.use('/api/salesman', salesmanRoutes);
 
 app.use((req, res) => {

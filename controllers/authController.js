@@ -42,9 +42,7 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Phone number already registered" });
     }
 
-    // ===========================
     // VALIDATE ROLE BEFORE CREATE
-    // ===========================
     let roleDetails = null;
 
     if (role === "salon_owner") {
@@ -74,7 +72,7 @@ export const signup = async (req, res) => {
         return res.status(400).json({ message: "Independent profile data required" });
       }
 
-      const requiredFields = ["specialty", "experience"];
+      const requiredFields = ["specializations", "experienceYears"];
       for (const field of requiredFields) {
         if (!independentData[field]) {
           return res.status(400).json({ message: `Independent profile field '${field}' is required` });
@@ -109,6 +107,8 @@ export const signup = async (req, res) => {
 
     // Generate token
     const token = generateToken(user);
+
+    console.log("User registered successfully:", user, salonData);
 
     return res.status(201).json({
       message: "Registration successful",

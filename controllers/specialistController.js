@@ -3,7 +3,7 @@ import Salon from "../models/Salon.js";
 
 export const addSpecialist = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userId; 
     const { name, expertise, experienceYears, certifications, contactNumber, image, availability } = req.body;
 
     // Verify salon exists

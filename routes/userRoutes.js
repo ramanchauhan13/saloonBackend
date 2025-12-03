@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { giveReview } from '../controllers/userController.js';
 import { getAllCategories } from '../controllers/categoryController.js';
 import { getFeaturedSalons, getNearbySalons, getHomeSalonsByCategory, getSalonById } from '../controllers/salonController.js';
+import { getHomeIndependentPros } from "../controllers/independentProController.js";
 
 const router = Router();
 
@@ -11,5 +12,7 @@ router.get('/get-nearby-salons', getNearbySalons);
 router.get('/get-all-categories', getAllCategories);
 
 router.get('/get-home-salons', getHomeSalonsByCategory);
+router.get("/get-home-independentpros", getHomeIndependentPros);
 router.get('/get-salon/:salonId', getSalonById);
+
 export default router;

@@ -16,7 +16,7 @@ import {
 
 import { verifyUser, blockUser, activateUser,  getAllUsers } from "../controllers/userController.js";
 
-import { getAllSaloons, getUnverifiedSalons } from "../controllers/salonController.js";
+import { getAllSaloons, getUnverifiedSalons, verifySalonByAdmin } from "../controllers/salonController.js";
 
 const router = Router();
 
@@ -46,5 +46,7 @@ router.get("/get-all-offers", authenticate, getAllOffers);
 router.get('/get-all-users', authenticate, isSuperAdmin, getAllUsers);
 
 router.get('/get-unverified-salons', authenticate, isSuperAdmin, getUnverifiedSalons);
+
+router.patch('/verify-salon/:salonId', authenticate, isSuperAdmin, verifySalonByAdmin);
 
 export default router;
