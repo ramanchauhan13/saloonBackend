@@ -3,10 +3,9 @@ import Category from "../models/Category.js";
 
 export const getHomeIndependentPros = async (req, res) => {
   try {
-    let { gender } = req.query;
-    console.log(gender);
-
-    // Map frontend gender → DB gender
+    let { category } = req.query;
+    
+    // Map frontend category → DB gender
     const genderMap = {
       men: "male",
       women: "female",
@@ -14,7 +13,7 @@ export const getHomeIndependentPros = async (req, res) => {
     };
 
     // Convert frontend gender to schema gender
-    const mappedGender = genderMap[gender];
+    const mappedGender = genderMap[category];
 
     // Build query
     const query = {};
