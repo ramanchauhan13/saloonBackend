@@ -5,10 +5,16 @@ import crypto from 'crypto';
 const salesmanSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   referralId: { type: String, unique: true, required: true },
-  refersTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Salon' }],
-  commissionRate: { type: Number, default: 0.05, min: 0, max: 1 }, // must be 0-1
+  // ⭐ Link this salesman to their manager (SalesExecutive)
+    salesExecutive: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SalesExecutive",
+      required: true,
+    },
+  commissionRate: { type: Number, default: 0 },
   totalEarnings: { type: Number, default: 0 },
 }, { timestamps: true });
+
 
 // Generate unique referral ID
 salesmanSchema.statics.generateUniqueReferralId = async function() {

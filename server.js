@@ -18,7 +18,9 @@ import salonAdminRoutes from './routes/salonAdminRoutes.js';
 import superAdminRoutes from './routes/superAdminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import independentProRoutes from './routes/independentProRoutes.js';
+import stateCityRoutes from './routes/StateCityRoutes.js';
 import salesmanRoutes from './routes/salesmanRoutes.js';
+import salesExecutiveRoutes from './routes/salesExecutiveRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,7 +51,9 @@ app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/salon-admin', salonAdminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/independent-pro', independentProRoutes);
+app.use('/api/state-city', stateCityRoutes);
 app.use('/api/salesman', salesmanRoutes);
+app.use('/api/sales-executive', salesExecutiveRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });

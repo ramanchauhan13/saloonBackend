@@ -9,7 +9,8 @@
     { "name": "Auth", "description": "Authentication and user management" },
     { "name": "Users", "description": "User-facing endpoints for salons, reviews, and categories" },
     { "name": "SalonAdmin", "description": "Salon owner endpoints for managing salon, specialists, services" },
-    { "name": "SuperAdmin", "description": "Super admin endpoints for managing users, salons, categories, offers" }
+    { "name": "SuperAdmin", "description": "Super admin endpoints for managing users, salons, categories, offers" },
+    { "name": "SalesManagement", "description": "Endpoints for managing Sales Executives and Salesmen" }
   ],
   "paths": {
     "/api/auth/signup": {
@@ -137,6 +138,148 @@
     "/api/superAdmin/update-offer/{offerId}": { "put": { "summary":"Update offer", "tags":["SuperAdmin"], "parameters":[{"name":"offerId","in":"path","required":true,"schema":{"type":"string"}}], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type":"object" } } } }, "responses":{"200":{"description":"Offer updated"},"404":{"description":"Offer not found"},"500":{"description":"Server error"}} } },
     "/api/superAdmin/delete-offer/{offerId}": { "delete": { "summary":"Delete offer", "tags":["SuperAdmin"], "parameters":[{"name":"offerId","in":"path","required":true,"schema":{"type":"string"}}], "responses":{"200":{"description":"Offer deleted"},"404":{"description":"Offer not found"},"500":{"description":"Server error"}} } },
     "/api/superAdmin/get-all-users": { "get": { "summary":"Get all users (paginated)", "tags":["SuperAdmin"], "responses":{"200":{"description":"Users list"},"500":{"description":"Server error"}} } },
-    "/api/superAdmin/get-unverified-salons": { "get": { "summary":"Get unverified salons", "tags":["SuperAdmin"], "responses":{"200":{"description":"List of unverified salons"},"500":{"description":"Server error"}} } }
+    "/api/superAdmin/get-unverified-salons": { "get": { "summary":"Get unverified salons", "tags":["SuperAdmin"], "responses":{"200":{"description":"List of unverified salons"},"500":{"description":"Server error"}} } },
+
+    "**/api/sales-executive/register**": {
+      "post": {
+        "summary": "Register a new Sales Executive (Super Admin only)",
+        "tags": ["SalesManagement"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "mobile": { "type": "string" },
+                  "name": { "type": "string" },
+                  "city": { "type": "string" },
+                  "commissionRate": { "type": "number", "nullable": true }
+                },
+                "required": ["email", "mobile", "name", "city"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Sales Executive registered successfully, returns temporary password" },
+          "400": { "description": "Validation error / User already exists" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden (Not Super Admin)" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "**/api/sales-executive/get-all-sales-executives**": {
+      "get": {
+        "summary": "Get all Sales Executives (Super Admin only)",
+        "tags": ["SalesManagement"],
+        "responses": {
+          "200": { "description": "List of Sales Executives" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden (Not Super Admin)" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+
+    "**/api/salesman/register-salesman**": {
+      "post": {
+        "summary": "Register a new Salesman",
+        "tags": ["SalesManagement"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "mobile": { "type": "string" },
+                  "name": { "type": "string" },
+                  "city": { "type": "string" },
+                  "commissionRate": { "type": "number" }
+                },
+                "required": ["email", "mobile", "name", "city", "commissionRate"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Salesman registered successfully, returns temporary password" },
+          "400": { "description": "Validation error / User already exists" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "**/api/salesman/get-all-salesmen**": {
+      "get": {
+        "summary": "Get all Salesmen",
+        "tags": ["SalesManagement"],
+        "responses": {
+          "200": { "description": "List of Salesmen" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+
+    "**/api/state-city/create-state**": {
+      "post": {
+        "summary": "Create a new State (Admin)",
+        "tags": ["SuperAdmin"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "country": { "type": "string" },
+                  "code": { "type": "string", "nullable": true }
+                },
+                "required": ["name", "country"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "State created successfully" },
+          "400": { "description": "Validation error / State already exists" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "**/api/state-city/create-city**": {
+      "post": {
+        "summary": "Create a new City (Admin)",
+        "tags": ["SuperAdmin"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "state": { "type": "string" },
+                  "country": { "type": "string" },
+                  "pincode": { "type": "string", "nullable": true }
+                },
+                "required": ["name", "state", "country"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "City created successfully" },
+          "400": { "description": "Validation error / City already exists in state" },
+          "500": { "description": "Server error" }
+        }
+      }
+    }
   }
 }

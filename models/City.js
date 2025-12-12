@@ -1,11 +1,15 @@
-import mongoose from 'mongoose';
- 
+import mongoose from "mongoose";
+
 const citySchema = new mongoose.Schema(
-    {
-        name: {type: String, requires: true, unique: true},
-        active: {type: Boolean, default: true}
-    },
-    {timestamp:true}
+  {
+    name: { type: String, required: true },                    // e.g. "Mumbai"
+    state: { type: mongoose.Schema.Types.ObjectId, 
+             ref: "State", 
+             required: true },                                 // Reference to State
+    country: { type: String, required: true },                 // Can duplicate from state for faster queries
+    pincode: { type: String },
+  },
+  { timestamps: true }
 );
 
 export default mongoose.model("City", citySchema);

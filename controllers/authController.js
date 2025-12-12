@@ -5,19 +5,26 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Salon from "../models/Salon.js";
 import IndependentProfessional from "../models/IndependentProfessional.js";
+import SalesExecutive from "../models/SalesExecutive.js";
+import Salesman from "../models/Salesman.js";
 import { generateOTP } from "../utils/otp.js";
 import { sendEmail } from "../utils/email.js";
 import { hashString } from "../utils/hash.js";
 
 const router = express.Router();
 
-const generateToken = (user) => {
+const generateToken = (user, roleDetails) => {
   return jwt.sign(
-    { id: user._id, role: user.role }, // include role
+    {
+      id: user._id,           // userId
+      role: user.role,        // user role (salesExecutive / salesman etc.)
+      roleId: roleDetails?._id || null, // salesExecutiveId / salesmanId etc.
+    },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
+
 
 export const signup = async (req, res) => {
   console.log("Signup request body:", req.body);
@@ -29,24 +36,21 @@ export const signup = async (req, res) => {
     // Basic validations
     // -----------------------
     if (!name || !email || !phone || !password) {
-      return res.status(400).json({ message: "Name, email, phone, password are required" });
+      return res.status(400).json({ message: "Name, email, phone, and password are required" });
     }
 
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
+    if (await User.findOne({ email })) {
       return res.status(400).json({ message: "Email already registered" });
     }
-
-    const existingPhone = await User.findOne({ phone });
-    if (existingPhone) {
-      return res.status(400).json({ message: "Phone number already registered" });
+    if (await User.findOne({ phone })) {
+      return res.status(400).json({ message: "Phone already registered" });
     }
 
-    // VALIDATE ROLE BEFORE CREATE
-    let roleDetails = null;
+    // =========================
+    // ROLE VALIDATION BEFORE USER CREATE
+    // =========================
 
     if (role === "salon_owner") {
-
       if (!salonData) {
         return res.status(400).json({ message: "Salon data is required for salon owner" });
       }
@@ -58,9 +62,8 @@ export const signup = async (req, res) => {
         }
       }
 
-      // Check government ID
       const govId = salonData.governmentId;
-      if (!govId || !govId.idType || !govId.idNumber || !govId.idImageUrl) {
+      if (!govId?.idType || !govId?.idNumber || !govId?.idImageUrl) {
         return res.status(400).json({
           message: "Government ID (idType, idNumber, idImageUrl) is required for salon owner"
         });
@@ -80,21 +83,23 @@ export const signup = async (req, res) => {
       }
     }
 
-    // ===========================
-    // NOW CREATE USER
-    // ===========================
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // ============================
+    // NOW CREATE USER (SAFE)
+    // ============================
     const user = await User.create({
       name,
       email,
       phone,
-      password: hashedPassword,
+      password,
       role,
     });
 
-    // ===========================
+    let roleDetails = null;
+
+    // ============================
     // CREATE ROLE DOCUMENT
-    // ===========================
+    // ============================
+
     if (role === "salon_owner") {
       roleDetails = await Salon.create({ ...salonData, owner: user._id });
       user.salonId = roleDetails._id;
@@ -105,20 +110,15 @@ export const signup = async (req, res) => {
       roleDetails = await IndependentProfessional.create({ ...independentData, user: user._id });
     }
 
-    // Generate token
-    const token = generateToken(user);
-
-    console.log("User registered successfully:", user, salonData);
+    // JWT
+    const token = generateToken(user, roleDetails);
 
     return res.status(201).json({
       message: "Registration successful",
       user: {
         ...user.toObject(),
-        ...(role === "salon_owner"
-          ? { salon: roleDetails }
-          : role === "independent_pro"
-          ? { independentProfile: roleDetails }
-          : {}),
+        ...(role === "salon_owner" && { salon: roleDetails }),
+        ...(role === "independent_pro" && { independentProfile: roleDetails }),
       },
       token,
     });
@@ -133,47 +133,44 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1️⃣ Find user by email
-    const user = await User.findOne({ email }).select('+password')
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) return res.status(400).json({ message: "Invalid email or password" });
 
-    // 2️⃣ Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    const userData  =  user.toObject();
-    delete userData.password;
-
-    // 3️⃣ Fetch role-specific data
     let roleDetails = null;
+
     if (user.role === "salon_owner") {
       roleDetails = await Salon.findOne({ owner: user._id }).lean();
     } else if (user.role === "independent_pro") {
       roleDetails = await IndependentProfessional.findOne({ user: user._id }).lean();
+    } else if (user.role === "sales_executive") {
+      roleDetails = await SalesExecutive.findOne({ user: user._id }).lean();
+    } else if (user.role === "sales_member") {
+      roleDetails = await Salesman.findOne({ user: user._id }).lean();
     }
 
-    // 4️⃣ Generate JWT token
-    const token = generateToken(user);
+    const token = generateToken(user, roleDetails);
 
-    // 5️⃣ Return unified user object
+    const userData = user.toObject();
+    delete userData.password;
+
     res.status(200).json({
       message: "Login successful",
       user: {
         ...userData,
-        ...(user.role === "salon_owner" ? { salon: roleDetails } : {}),
-        ...(user.role === "independent_pro" ? { independentProfile: roleDetails } : {}),
+        roleDetails,
       },
       token,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Login failed", error: err.message });
   }
 };
+
 
 export const toggleOffersHomeService = async (req, res) => {
 
@@ -346,9 +343,7 @@ export const completeNewUser = async (req, res) => {
     const existingUser = await User.findOne({ mobile });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({ name, email, password: hashedPassword, role, mobile });
+    const user = await User.create({ name, email, password, role, mobile });
 
     // Generate login token for the new user
     const loginToken = jwt.sign({ userId: user._id, mobile }, JWT_SECRET, { expiresIn: "7d" });

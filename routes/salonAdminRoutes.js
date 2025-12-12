@@ -62,4 +62,6 @@ router.get("/get-service-items", authenticate, isSalonOwner, isSalonVerifiedByAd
 router.patch("/toggle-home-service", authenticate, isSalonOwner, isSalonVerifiedByAdmin, toggleOffersHomeService);
 
 
+
+
 export default router;

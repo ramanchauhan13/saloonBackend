@@ -9,15 +9,12 @@ const generatePassword = () => crypto.randomBytes(4).toString('hex');
 // Register new Salesman
 export const registerSalesman = async (req, res) => {
     try {
-        const { email, mobile, name, commissionRate = 0.05 } = req.body;
+    
+        const { email, mobile, name, city, commissionRate } = req.body;
 
-        if (!mobile || !name) {
-            return res.status(400).json({ message: "Mobile and name are required." });
+        if (!mobile || !name || !email || !city || !commissionRate) {
+            return res.status(400).json({ message: "Mobile, name, email, city, and commission rate are required." });
         }
-
-        // if (commissionRate < 0 || commissionRate > 1) {
-        //     return res.status(400).json({ message: "Commission rate must be between 0 and 1." });
-        // }
 
         // Check if user exists
         const query = [{ phone: mobile }];
@@ -29,14 +26,13 @@ export const registerSalesman = async (req, res) => {
 
         // Generate password & hash
         const password = generatePassword();
-        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create User
         const newUser = new User({
             name,
             phone: mobile,
             email: email?.toLowerCase(),
-            password: hashedPassword,
+            password,
             role: 'salesman',
         });
         await newUser.save();
