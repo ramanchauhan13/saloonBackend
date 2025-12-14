@@ -73,3 +73,38 @@ export const getAllSalesExecutives = async (req, res) => {
     }
 };
 
+// Get sales executives by city
+export const getSalesExecutivesByCity = async (req, res) => {
+  try {
+    const { cityId } = req.params;
+
+    if (!cityId) {
+      return res.status(400).json({ message: "City ID is required." });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(cityId)) {
+      return res.status(400).json({ message: "Invalid City ID." });
+    }
+
+    const salesExecutives = await SalesExecutive.find({ city: cityId })
+      .populate("user", "name email phone")
+      .populate("city", "name") // optional but recommended
+      .populate("team")         // virtual populate
+      .sort({ createdAt: -1 });
+
+    if (!salesExecutives.length) {
+      return res.status(404).json({
+        message: "No sales executives found for this city."
+      });
+    }
+
+    res.status(200).json({ salesExecutives });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to fetch sales executives by city.",
+      error: error.message
+    });
+  }
+};

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const stateSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },         // e.g. "Maharashtra"
-    country: { type: String, required: true },      // e.g. "India"
+    country: { type: String, default: "India" },      // e.g. "India"
     code: { type: String },                         // Optional: "MH"
   },
   { timestamps: true }

@@ -6,17 +6,17 @@ import City from '../models/City.js';
 
 export const createState = async (req, res) => {
     try {
-        const { name, country, code } = req.body;
-        if (!name || !country) {
-            return res.status(400).json({ message: "State name and country are required." });
+        const { name, code } = req.body;
+        if (!name) {
+            return res.status(400).json({ message: "State name is required." });
         }
 
         // already exists check with name check like Uttar Pradesh and uttar Pradesh and Uttarpradesh is same
-        if(await State.findOne({name: new RegExp(`^${name}$`, 'i'), country: new RegExp(`^${country}$`, 'i')})){
+        if(await State.findOne({name: new RegExp(`^${name}$`, 'i')})){
             return  res.status(400).json({ message: "State with this name already exists in the country." });
         }
 
-        const newState = new State({ name, country, code });
+        const newState = new State({ name, code });
         await newState.save();
         res.status(201).json({ message: "State created successfully", state: newState });
     } catch (error) {
@@ -28,21 +28,41 @@ export const createState = async (req, res) => {
 // Create a new City
 export const createCity = async (req, res) => {
     try {
-        const { name, state, country, pincode } = req.body;
-        if (!name || !state || !country) {
-            return res.status(400).json({ message: "City name, state, and country are required." });
+        const { name, state, pincode } = req.body;
+        if (!name || !state ||!pincode) {
+            return res.status(400).json({ message: "City name, state, and pincode are required." });
         }
 
         // already exists check with name check like Mumbai and mumbai and Mumbay is same
-        if(await City.findOne({name: new RegExp(`^${name}$`, 'i'), state, country: new RegExp(`^${country}$`, 'i')})){
-            return  res.status(400).json({ message: "City with this name already exists in the state and country." });
+        if(await City.findOne({name: new RegExp(`^${name}$`, 'i'), state})){
+            return  res.status(400).json({ message: "City with this name already exists in the state." });
         }
 
-        const newCity = new City({ name, state, country, pincode });
+        const newCity = new City({ name, state, pincode });
         await newCity.save();
         res.status(201).json({ message: "City created successfully", city: newCity });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to create city", error: error.message });
     }
+}
+
+export const getAllCities = async (req, res) => {
+    try {
+        const cities = await City.find().populate('state').lean();
+        res.status(200).json({ cities });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to fetch cities", error: error.message });
+    }
+}
+
+export const getAllStates = async (req, res) => {
+    try {
+        const states = await State.find().lean();
+        res.status(200).json({ states });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to fetch states", error: error.message });
+    }  
 }

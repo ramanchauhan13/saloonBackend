@@ -6,7 +6,7 @@ const citySchema = new mongoose.Schema(
     state: { type: mongoose.Schema.Types.ObjectId, 
              ref: "State", 
              required: true },                                 // Reference to State
-    country: { type: String, required: true },                 // Can duplicate from state for faster queries
+    country: { type: String, default: "India" },                 // Can duplicate from state for faster queries
     pincode: { type: String },
   },
   { timestamps: true }
