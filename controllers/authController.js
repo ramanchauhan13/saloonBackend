@@ -150,6 +150,9 @@ export const login = async (req, res) => {
     } else if (user.role === "salesman") {
       roleDetails = await Salesman.findOne({ user: user._id }).lean();
     }
+    else if (user.role === "specialist") {
+      roleDetails = await Specialist.findOne({ user: user._id }).lean();
+    }
     
     const token = generateToken(user, roleDetails);
 

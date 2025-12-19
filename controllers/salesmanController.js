@@ -9,7 +9,11 @@ const generatePassword = () => crypto.randomBytes(4).toString('hex');
 // Register new Salesman
 export const registerSalesman = async (req, res) => {
     try {
-    
+        const executiveId = req.user.roleId;
+        if(!executiveId) {
+            return res.status(400).json({ message: "Invalid Sales Executive." });
+        }
+        
         const { email, mobile, name, city, commissionRate } = req.body;
 
         if (!mobile || !name || !email || !city || !commissionRate) {
@@ -46,6 +50,7 @@ export const registerSalesman = async (req, res) => {
             commissionRate,
             referralId,
             city,
+            salesExecutive: executiveId,
         });
         await newSalesman.save();
 

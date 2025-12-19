@@ -21,7 +21,12 @@ export const authenticate = async (req, res, next) => {
     }
 
     // Set user info to request
-    req.user = user; 
+     // ✅ attach BOTH user + role info
+    req.user = {
+      ...user.toObject(),
+      roleId: decoded.roleId, // 🔥 SalesExecutive._id
+    };
+    // req.user = user; 
     req.userId = user._id;
 
     next();
