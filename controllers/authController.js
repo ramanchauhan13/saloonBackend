@@ -119,6 +119,9 @@ export const signup = async (req, res) => {
         ...user.toObject(),
         ...(role === "salon_owner" && { salon: roleDetails }),
         ...(role === "independent_pro" && { independentProfile: roleDetails }),
+        ...(role === "sales_executive" && { salesExecutive: roleDetails }),
+        ...(role === "salesman" && { salesman: roleDetails }),
+        ...(role === "specialist" && { specialist: roleDetails }),
       },
       token,
     });
