@@ -23,7 +23,6 @@ import { getSaloonDetails } from "../controllers/salonController.js";
 import {
   authenticate,
   isSalonOwner,
-  isSalonVerifiedByAdmin,
 } from "../middlewares/authMiddleware.js";
 import { toggleOffersHomeService } from "../controllers/authController.js";
 
@@ -35,17 +34,15 @@ router.post(
   "/add-specialist",
   authenticate,
   isSalonOwner,
-  isSalonVerifiedByAdmin,
   addSpecialist
 );
 router.get(
   "/get-specialists", authenticate, isSalonOwner,
-  isSalonVerifiedByAdmin,
   getSpecialistsBySalon
 );
 
-router.put("/update-specialist/:specialistId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, updateSpecialist);
-router.delete("/delete-specialist/:specialistId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, deleteSpecialist);
+router.put("/update-specialist/:specialistId", authenticate, isSalonOwner, updateSpecialist);
+router.delete("/delete-specialist/:specialistId", authenticate, isSalonOwner, deleteSpecialist);
 
 router.patch("/add-location/:salonId", addOrUpdateSalonLocation);
 
@@ -53,15 +50,12 @@ router.get("/get-subscription-plans", authenticate, isSalonOwner, getSubscriptio
 router.get("/subscription-status", authenticate, isSalonOwner, checkSubscriptionStatus);
 router.patch("/subscribe-plan", authenticate, isSalonOwner, subscribePlan);
 
-router.post("/create-service-item", authenticate, isSalonOwner, isSalonVerifiedByAdmin, createServiceItem);
-router.put("/update-service-item/:serviceId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, updateServiceItem);
-router.delete("/delete-service-item/:serviceId", authenticate, isSalonOwner, isSalonVerifiedByAdmin, deleteServiceItem);
-router.get("/get-service-items", authenticate, isSalonOwner, isSalonVerifiedByAdmin, getServiceItemsBySalon);
+router.post("/create-service-item", authenticate, isSalonOwner, createServiceItem);
+router.put("/update-service-item/:serviceId", authenticate, isSalonOwner, updateServiceItem);
+router.delete("/delete-service-item/:serviceId", authenticate, isSalonOwner, deleteServiceItem);
+router.get("/get-service-items", authenticate, isSalonOwner, getServiceItemsBySalon);
 
-
-router.patch("/toggle-home-service", authenticate, isSalonOwner, isSalonVerifiedByAdmin, toggleOffersHomeService);
-
-
+router.patch("/toggle-home-service", authenticate, isSalonOwner, toggleOffersHomeService);
 
 
 export default router;

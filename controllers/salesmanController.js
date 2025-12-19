@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
 // Secure random password (8 chars)
-const generatePassword = () => crypto.randomBytes(4).toString('hex');
+const generatePassword = () => crypto.randomBytes(4)    .toString('hex');
 
 // Register new Salesman
 export const registerSalesman = async (req, res) => {

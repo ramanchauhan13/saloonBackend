@@ -55,7 +55,7 @@ export const signup = async (req, res) => {
         return res.status(400).json({ message: "Salon data is required for salon owner" });
       }
 
-      const requiredFields = ["shopType", "shopName", "salonCategory", "location"];
+      const requiredFields = ["shopType", "shopName", "salonCategory", "location", "city"];
       for (const field of requiredFields) {
         if (!salonData[field]) {
           return res.status(400).json({ message: `Salon field '${field}' is required` });

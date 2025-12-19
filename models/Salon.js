@@ -1,4 +1,3 @@
-// models/Salon.js
 import mongoose from "mongoose";
 
 const partnerSchema = new mongoose.Schema({
@@ -22,7 +21,7 @@ const salonSchema = new mongoose.Schema(
 
     salonCategory: {
       type: String,
-      enum: ["men", "beautyParlour", "unisex", "spa"],
+      enum: ["men", "women", "unisex", "spa"],
       required: true,
     },
 
@@ -40,11 +39,20 @@ const salonSchema = new mongoose.Schema(
 
     registrationNumber: String,
 
-    city_id: {
+    // --- Geolocation References (CRITICAL ADDITIONS) ---
+    // state: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "State", // Assuming you have a 'State' model
+    //     required: true,
+    //     index: true // Index for fast filtering by state
+    // },
+    city: { // City is kept as the primary reference for location
       type: mongoose.Schema.Types.ObjectId,
       ref: "City",
-      required: true
+      required: true,
+      index: true // Index for fast filtering by city
     },
+
     // GeoJSON
     location: {
       type: {
@@ -54,9 +62,9 @@ const salonSchema = new mongoose.Schema(
       },
       coordinates: { type: [Number], required: true, index: "2dsphere" },
       address: { type: String, required: true },
-      // city: String,
-      // state: String,
-      // pincode: String,
+      city: String,
+      state: String,
+      pincode: String,
     },
 
     logoUrl: String,
@@ -89,7 +97,7 @@ const salonSchema = new mongoose.Schema(
     },
 
     onboardedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    verifiedByAdmin: { type: Boolean, default: false },
+    // verifiedByAdmin: { type: Boolean, default: false },
   },
   {
     timestamps: true,

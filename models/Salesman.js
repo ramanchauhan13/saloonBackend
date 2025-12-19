@@ -5,14 +5,26 @@ import crypto from 'crypto';
 const salesmanSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   referralId: { type: String, unique: true, required: true },
+  city: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "City",
+        required: true,
+      },
   // ⭐ Link this salesman to their manager (SalesExecutive)
     salesExecutive: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SalesExecutive",
       required: true,
     },
+
   commissionRate: { type: Number, default: 0 },
   totalEarnings: { type: Number, default: 0 },
+
+   status: {
+      type: String,
+      enum: ["active", "blocked"],
+      default: "active",
+    },
 }, { timestamps: true });
 
 

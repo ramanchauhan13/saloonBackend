@@ -40,42 +40,6 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const isSalonVerifiedByAdmin = async (req, res, next) => {
-  try {
-    // ✅ Auth middleware already set req.user
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized - No user found" });
-    }
-
-    // ✅ Find salon owned by this user
-    const salon = await Salon.findOne({ owner: userId });
-
-    if (!salon) {
-      return res.status(404).json({ error: "Salon not found for this user" });
-    }
-
-    // ✅ Check admin verification
-    if (!salon.verifiedByAdmin) {
-      return res.status(403).json({
-        error: "Access denied - Salon not verified by admin yet",
-        message: "Please wait for admin approval to access this resource"
-      });
-    }
-
-    // ✅ Attach salon to request for controller use
-    req.salon = salon;
-    next();
-  } catch (error) {
-    console.error("Salon verification middleware error:", error);
-    res.status(500).json({
-      error: "Server error while verifying salon status",
-    });
-  }
-};
-
-
 export const isSalonOwner = async (req, res, next) => {
   try {
     if (!req.user) {

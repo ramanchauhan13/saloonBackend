@@ -48,7 +48,7 @@ const independentSchema = new mongoose.Schema(
       },
     },
 
-    verifiedByAdmin: { type: Boolean, default: false },
+    // verifiedByAdmin: { type: Boolean, default: false },
   },
   {
     timestamps: true,
