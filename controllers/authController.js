@@ -147,7 +147,7 @@ export const login = async (req, res) => {
       roleDetails = await IndependentProfessional.findOne({ user: user._id }).lean();
     } else if (user.role === "sales_executive") {
       roleDetails = await SalesExecutive.findOne({ user: user._id }).lean();
-    } else if (user.role === "sales_member") {
+    } else if (user.role === "salesman") {
       roleDetails = await Salesman.findOne({ user: user._id }).lean();
     }
     
