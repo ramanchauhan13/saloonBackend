@@ -5,7 +5,7 @@ import crypto from "crypto";
 // Secure random password (8 chars)
 const generatePassword = () => crypto.randomBytes(4).toString('hex');
 
-// Register new Salesman
+// Register new Sales Executive
 export const registerSalesExecutive = async (req, res) => {
   try {
     const { email, mobile, name, city, commissionRate } = req.body;
@@ -97,9 +97,7 @@ export const getSalesExecutivesByCity = async (req, res) => {
         message: "No sales executives found for this city."
       });
     }
-
     res.status(200).json({ salesExecutives });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({

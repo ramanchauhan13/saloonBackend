@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
   role: {
     type: String,
-    enum: ["customer", "salon_owner", "independent_pro", "super_admin", "sales_member", "team_lead", "sales_executive"],
+    enum: ["customer", "salon_owner", "independent_pro", "super_admin", "salesman", "team_lead", "sales_executive"],
     default: "customer"
   },
   status: { type: String, enum: ["active", "blocked"], default: "active" },

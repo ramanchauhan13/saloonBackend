@@ -150,7 +150,7 @@ export const login = async (req, res) => {
     } else if (user.role === "sales_member") {
       roleDetails = await Salesman.findOne({ user: user._id }).lean();
     }
-
+    
     const token = generateToken(user, roleDetails);
 
     const userData = user.toObject();
