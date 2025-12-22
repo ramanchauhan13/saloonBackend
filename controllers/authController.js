@@ -359,5 +359,44 @@ export const completeNewUser = async (req, res) => {
 };
 
 
+// ===== SUPERADMIN RESET PASSWORD =====
+export const superAdminResetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        message: "Email and newPassword are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash new password
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    // Clear any existing reset data
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Password reset successfully by SuperAdmin",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Failed to reset password",
+      error: err.message,
+    });
+  }
+};
+
+
+
 
 export default router;
