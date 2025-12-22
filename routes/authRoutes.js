@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, login, forgotPassword, verifyOTP, resetPassword } from "../controllers/authController.js";
+import { signup, login, forgotPassword, verifyOTP, resetPassword, superAdminResetPassword } from "../controllers/authController.js";
 import { authenticate, isSuperAdmin } from "../middlewares/authMiddleware.js";
 
 
