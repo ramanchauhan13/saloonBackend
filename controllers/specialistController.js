@@ -74,10 +74,20 @@ export const getSpecialistsBySalon = async (req, res) => {
     if (!salon) {
       return res.status(404).json({ success: false, message: "Salon not found" });
     }
-    res.status(200).json({
+
+     const specialists = await Specialist.find({ salon: salon._id })
+      .populate({
+        path: "user",
+        select: "name phone email role",
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+   res.status(200).json({
       success: true,
-      specialists: salon.specialistsData,
-    });
+      count: specialists.length,
+      specialists,
+    }); 
   } catch (error) {
     console.error("Error fetching specialists:", error);
     res.status(500).json({
