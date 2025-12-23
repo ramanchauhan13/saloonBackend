@@ -154,136 +154,136 @@ export const getNearbySalons = async (req, res) => {
 
 
 // GET /home-salons?category=men&lat=28.61&lng=77.20&radius=10
-export const getHomeSalonsByCategory = async (req, res) => {
-  console.log(req.query);
-  try {
-    const { category, latitude, longitude, radius = 5 } = req.query;
-
-    if (!category || !latitude || !longitude) {
-      return res.status(400).json({
-        success: false,
-        message: "category, lat and lng are required",
-      });
-    }
-
-    const salons = await Salon.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: "Point",
-            coordinates: [parseFloat(longitude), parseFloat(latitude)],
-          },
-          distanceField: "distanceInMeters",
-          maxDistance: parseFloat(radius) * 1000,
-          spherical: true,
-          query: {
-            salonCategory: category,
-          },
-        },
-      },
-      {
-        $project: {
-          shopName: 1,
-          salonCategory: 1,
-          shopType: 1,
-          galleryImages: 1,
-          location: 1,
-          distanceInMeters: 1,
-        },
-      },
-      { $sort: { distanceInMeters: 1 } },
-      { $limit: 20 },
-    ]);
-
-    // attach service categories (max 3)
-    const salonsWithCategories = await Promise.all(
-      salons.map(async (salon) => {
-        const categories = await ServiceItem.aggregate([
-          { $match: { providerType: "salon", providerId: salon._id } },
-          {
-            $lookup: {
-              from: "categories",
-              localField: "category",
-              foreignField: "_id",
-              as: "categoryData",
-            },
-          },
-          { $unwind: "$categoryData" },
-          {
-            $group: {
-              _id: "$categoryData._id",
-              name: { $first: "$categoryData.name" },
-            },
-          },
-          { $limit: 3 },
-        ]);
-
-        return {
-          ...salon,
-          distanceInKm: (salon.distanceInMeters / 1000).toFixed(2),
-          categories,
-        };
-      })
-    );
-
-    res.status(200).json({
-      success: true,
-      count: salonsWithCategories.length,
-      data: salonsWithCategories,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: err.message,
-    });
-  }
-};
-
-
-// GET /salons?category=men
 // export const getHomeSalonsByCategory = async (req, res) => {
-//   console.log("Fetching home salons by category");
+//   console.log(req.query);
 //   try {
-//     const { category } = req.query; // men / women  / unisex 
-//     console.log("Fetching home salons for category:", category);
+//     const { category, latitude, longitude, radius = 5 } = req.query;
 
-//     if (!category) {
-//       return res.status(400).json({ success: false, message: "Category required" });
+//     if (!category || !latitude || !longitude) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "category, lat and lng are required",
+//       });
 //     }
 
-//     const salons = await Salon.find({ salonCategory: category })
-//       .select("_id shopName shopType salonCategory galleryImages location")
-//       .sort({ createdAt: -1 })
-//       .lean();
+//     const salons = await Salon.aggregate([
+//       {
+//         $geoNear: {
+//           near: {
+//             type: "Point",
+//             coordinates: [parseFloat(longitude), parseFloat(latitude)],
+//           },
+//           distanceField: "distanceInMeters",
+//           maxDistance: parseFloat(radius) * 1000,
+//           spherical: true,
+//           query: {
+//             salonCategory: category,
+//           },
+//         },
+//       },
+//       {
+//         $project: {
+//           shopName: 1,
+//           salonCategory: 1,
+//           shopType: 1,
+//           galleryImages: 1,
+//           location: 1,
+//           distanceInMeters: 1,
+//         },
+//       },
+//       { $sort: { distanceInMeters: 1 } },
+//       { $limit: 20 },
+//     ]);
 
-//     // Attach unique service categories to each salon
+//     // attach service categories (max 3)
 //     const salonsWithCategories = await Promise.all(
 //       salons.map(async (salon) => {
-//         const categoryList = await ServiceItem.aggregate([
+//         const categories = await ServiceItem.aggregate([
 //           { $match: { providerType: "salon", providerId: salon._id } },
-//           { $lookup: {
+//           {
+//             $lookup: {
 //               from: "categories",
 //               localField: "category",
 //               foreignField: "_id",
 //               as: "categoryData",
-//             }
+//             },
 //           },
 //           { $unwind: "$categoryData" },
-//           { $group: { _id: "$categoryData._id", name: { $first: "$categoryData.name" } } },
+//           {
+//             $group: {
+//               _id: "$categoryData._id",
+//               name: { $first: "$categoryData.name" },
+//             },
+//           },
 //           { $limit: 3 },
 //         ]);
-//         return { ...salon, categories: categoryList };
+
+//         return {
+//           ...salon,
+//           distanceInKm: (salon.distanceInMeters / 1000).toFixed(2),
+//           categories,
+//         };
 //       })
 //     );
-//     return res.json({ success: true, data: salonsWithCategories });
 
+//     res.status(200).json({
+//       success: true,
+//       count: salonsWithCategories.length,
+//       data: salonsWithCategories,
+//     });
 //   } catch (err) {
 //     console.error(err);
-//     return res.status(500).json({ success: false, message: err.message });
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//       error: err.message,
+//     });
 //   }
 // };
+
+
+// GET /salons?category=men
+export const getHomeSalonsByCategory = async (req, res) => {
+  console.log("Fetching home salons by category");
+  try {
+    const { category } = req.query; // men / women  / unisex 
+    console.log("Fetching home salons for category:", category);
+
+    if (!category) {
+      return res.status(400).json({ success: false, message: "Category required" });
+    }
+
+    const salons = await Salon.find({ salonCategory: category })
+      .select("_id shopName shopType salonCategory galleryImages location")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Attach unique service categories to each salon
+    const salonsWithCategories = await Promise.all(
+      salons.map(async (salon) => {
+        const categoryList = await ServiceItem.aggregate([
+          { $match: { providerType: "salon", providerId: salon._id } },
+          { $lookup: {
+              from: "categories",
+              localField: "category",
+              foreignField: "_id",
+              as: "categoryData",
+            }
+          },
+          { $unwind: "$categoryData" },
+          { $group: { _id: "$categoryData._id", name: { $first: "$categoryData.name" } } },
+          { $limit: 3 },
+        ]);
+        return { ...salon, categories: categoryList };
+      })
+    );
+    return res.json({ success: true, data: salonsWithCategories });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 
 export const getSalonById = async (req, res) => {
