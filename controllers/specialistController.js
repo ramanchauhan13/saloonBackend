@@ -47,7 +47,6 @@ export const addSpecialist = async (req, res) => {
       expertise,
       experienceYears: Number(experienceYears) || 0,
       certifications,
-      contactNumber,
       image: image || "",
       availability: availability || [],
     });
