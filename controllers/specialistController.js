@@ -101,20 +101,69 @@ export const getSpecialistsBySalon = async (req, res) => {
 export const updateSpecialist = async (req, res) => {
   try {
     const { specialistId } = req.params;
-    const updateData = req.body;  
+    const { 
+      name, phone, email, // User fields
+      expertise, experienceYears, certifications, image, availability // Specialist fields
+    } = req.body;
 
-    const specialist = await Specialist.findByIdAndUpdate(specialistId, updateData, { new: true }).populate("user", "name phone email").lean();
+    // 1. Find the specialist record first
+    const specialist = await Specialist.findById(specialistId);
     if (!specialist) {
       return res.status(404).json({ success: false, message: "Specialist not found" });
     }
 
+    // 2. Update the associated User record
+    // We update name, phone, and email specifically
+    const updatedUser = await User.findByIdAndUpdate(
+      specialist.user,
+      { 
+        $set: { 
+          ...(name && { name }), 
+          ...(phone && { phone }), 
+          ...(email && { email }) 
+        } 
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "Associated user not found" });
+    }
+
+    // 3. Update the Specialist record
+    const updatedSpecialist = await Specialist.findByIdAndUpdate(
+      specialistId,
+      {
+        $set: {
+          expertise: expertise || specialist.expertise,
+          experienceYears: experienceYears !== undefined ? Number(experienceYears) : specialist.experienceYears,
+          certifications: certifications || specialist.certifications,
+          image: image || specialist.image,
+          availability: availability || specialist.availability,
+        },
+      },
+      { new: true }
+    ).populate({
+      path: "user",
+      select: "name phone email role",
+    });
+
     res.status(200).json({
       success: true,
       message: "Specialist updated successfully",
-      specialist,
+      specialist: updatedSpecialist,
     });
   } catch (error) {
     console.error("Error updating specialist:", error);
+    
+    // Handle duplicate key errors (e.g., if user tries to update to an email already in use)
+    if (error.code === 11000) {
+        return res.status(400).json({
+            success: false,
+            message: "Phone or Email already exists in the system",
+        });
+    }
+
     res.status(500).json({
       success: false,
       message: "Server error while updating specialist",
@@ -126,22 +175,69 @@ export const updateSpecialist = async (req, res) => {
 export const deleteSpecialist = async (req, res) => {
   try {
     const { specialistId } = req.params;
-    const specialist = await Specialist.findByIdAndDelete(specialistId);
+
+    const specialist = await Specialist.findById(specialistId);
     if (!specialist) {
       return res.status(404).json({ success: false, message: "Specialist not found" });
     }
+
+    // Delete both the Specialist and the User record
+    await User.findByIdAndDelete(specialist.user);
+    await Specialist.findByIdAndDelete(specialistId);
+
     res.status(200).json({
       success: true,
-      message: "Specialist deleted successfully",
-      specialist,
+      message: "Specialist and associated user account deleted successfully",
     });
-  }
-  catch (error) {
-    console.error("Error deleting specialist:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while deleting specialist",
-      error: error.message,
-    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// export const updateSpecialist = async (req, res) => {
+//   try {
+//     const { specialistId } = req.params;
+//     const updateData = req.body;  
+
+//     const specialist = await Specialist.findByIdAndUpdate(specialistId, updateData, { new: true }).populate("user", "name phone email").lean();
+//     if (!specialist) {
+//       return res.status(404).json({ success: false, message: "Specialist not found" });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Specialist updated successfully",
+//       specialist,
+//     });
+//   } catch (error) {
+//     console.error("Error updating specialist:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error while updating specialist",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// export const deleteSpecialist = async (req, res) => {
+//   try {
+//     const { specialistId } = req.params;
+//     const specialist = await Specialist.findByIdAndDelete(specialistId);
+//     if (!specialist) {
+//       return res.status(404).json({ success: false, message: "Specialist not found" });
+//     }
+//     res.status(200).json({
+//       success: true,
+//       message: "Specialist deleted successfully",
+//       specialist,
+//     });
+//   }
+//   catch (error) {
+//     console.error("Error deleting specialist:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error while deleting specialist",
+//       error: error.message,
+//     });
+//   }
+// };
