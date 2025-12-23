@@ -376,7 +376,7 @@ export const superAdminResetPassword = async (req, res) => {
     }
 
     // Hash new password
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
 
     // Clear any existing reset data
     user.resetPasswordOTP = undefined;
