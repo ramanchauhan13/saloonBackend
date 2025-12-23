@@ -91,7 +91,7 @@ export const getServiceItemsBySalon = async (req, res) => {
     if (!salon) {
       return res.status(404).json({ success: false, message: "Salon not found" });
     }
-    const services = await ServiceItem.find({ providerId: salon._id }).lean();
+    const services = await ServiceItem.find({ providerId: salon._id }).populate("category").lean();
     res.status(200).json({ success: true, services });
     console.log("Services fetched successfully for user:", services);
   } catch (error) {
