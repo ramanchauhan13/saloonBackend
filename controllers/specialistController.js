@@ -103,7 +103,7 @@ export const updateSpecialist = async (req, res) => {
     const { specialistId } = req.params;
     const updateData = req.body;  
 
-    const specialist = await Specialist.findByIdAndUpdate(specialistId, updateData, { new: true });
+    const specialist = await Specialist.findByIdAndUpdate(specialistId, updateData, { new: true }).populate("user", "name phone email").lean();
     if (!specialist) {
       return res.status(404).json({ success: false, message: "Specialist not found" });
     }
