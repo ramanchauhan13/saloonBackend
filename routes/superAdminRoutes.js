@@ -18,6 +18,11 @@ import { verifyUser, blockUser, activateUser,  getAllUsers } from "../controller
 
 import { getAllSaloons, getUnverifiedSalons, verifySalonByAdmin } from "../controllers/salonController.js";
 
+import {
+  getSubscriptionPlans,
+  createSubscriptionPlan
+} from "../controllers/subscriptionController.js";
+
 const router = Router();
 
 router.get("/getAllSaloons", authenticate, isSuperAdmin, getAllSaloons);
@@ -48,5 +53,9 @@ router.get('/get-all-users', authenticate, isSuperAdmin, getAllUsers);
 router.get('/get-unverified-salons', authenticate, isSuperAdmin, getUnverifiedSalons);
 
 router.patch('/verify-salon/:salonId', authenticate, isSuperAdmin, verifySalonByAdmin);
+
+// Subscription Plan Management
+router.get('/get-subscription-plans', authenticate, isSuperAdmin, getSubscriptionPlans);
+router.post('/create-subscription-plan', authenticate, isSuperAdmin, createSubscriptionPlan);
 
 export default router;
