@@ -8,7 +8,7 @@ export const createServiceItem = async (req, res) => {
     if (!salon) {
       return res.status(404).json({ success: false, message: "Salon not found" });
     }
-    const { name, category, price, durationMins, discountPercent, description, image, providerType } = req.body;
+    const { name, category, price, durationMins, discountPercent, description, image, providerType, addOns } = req.body;
     
     if(!name || !category || !price || !durationMins || !providerType){
       return  res.status(400).json({ success: false, message: "Missing required fields" });
@@ -24,6 +24,7 @@ export const createServiceItem = async (req, res) => {
       image,
       providerType,
       providerId: salon._id,
+      addOns: addOns || []
     };
     await ServiceItem.create(newService);
     res.status(201).json({ success: true, message: "Service created successfully", service: newService });
@@ -34,7 +35,6 @@ export const createServiceItem = async (req, res) => {
 };
 
 export const updateServiceItem = async (req, res) => {
-  console.log(req.body);
   try {
     const userId = req.userId;
     const salon = await Salon.findOne({ owner: userId });

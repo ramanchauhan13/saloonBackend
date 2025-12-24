@@ -8,6 +8,7 @@ const generatePassword = () => crypto.randomBytes(4).toString('hex');
 
 // Register new Salesman
 export const registerSalesman = async (req, res) => {
+    console.log(req.body);
     try {
         const executiveId = req.user.roleId;
         if(!executiveId) {
@@ -73,13 +74,13 @@ export const registerSalesman = async (req, res) => {
 };
 
 // Get all salesmen
-export const getAllSalesmen = async (req, res) => {
+export const getAllSalesman = async (req, res) => {
     console.log("Fetching all salesmen...");
     try {
-        const salesmen = await Salesman.find()
+        const salesman = await Salesman.find()
             .populate('user', 'name email phone')
             .sort({ createdAt: -1 });
-        res.status(200).json({ salesmen });
+        res.status(200).json({ salesman });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch salesmen.", error: error.message });
     }
