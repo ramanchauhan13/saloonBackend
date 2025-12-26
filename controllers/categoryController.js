@@ -42,7 +42,6 @@ export const createCategory = async (req, res) => {
   }
 };
 
-
 export const editCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;

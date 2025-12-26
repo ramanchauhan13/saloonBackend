@@ -1,79 +1,132 @@
 // models/Booking.js
 import mongoose from "mongoose";
 
-const bookingSchema = new mongoose.Schema({
-  customer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-
-  providerType: {
-    type: String,
-    enum: ["salon", "independent"],
-    required: true,
-  },
-
-  providerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    refPath: "providerType", // dynamically refers to "Salon" or "IndependentProfessional"
-  },
-
-  serviceItems: [
-    {
-      service: { type: mongoose.Schema.Types.ObjectId, ref: "ServiceItem", required: true },
-      quantity: { type: Number, default: 1 },
-      price: { type: Number, required: true },
+const bookingSchema = new mongoose.Schema(
+  {
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-  ],
 
-  bookingStatus: { type: String, enum: ["pending", "confirmed", "completed", "cancelled"], default: "pending" },
-  totalAmount: { type: Number, required: true },
-  paymentStatus: {
-    type: String,
-    enum: ["pending", "paid", "failed", "refunded"],
-    default: "pending",
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["cash", "online", "upi", "card"],
-    default: "cash",
-  },
+    /* ---------------- PROVIDER ---------------- */
+    providerType: {
+      type: String,
+      enum: ["Salon", "IndependentProfessional"],
+      required: true,
+    },
 
-  bookingType: {
-    type: String,
-    enum: ["in_salon", "home_service"],
-    required: true,
-  },
+    providerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: "providerType",
+      index: true,
+    },
 
-  date: { type: Date, required: true },
-  timeSlot: { type: String, required: true }, // e.g., "10:00-11:00"
+    // Only for salon bookings
+    specialist: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Specialist",
+      default: null,
+    },
 
-  location: {
-    address: String,
-    coordinates: { type: [Number], index: "2dsphere" },
-  },
-
-  status: {
-    type: String,
-    enum: [
-      "pending",       // awaiting provider confirmation
-      "confirmed",     // accepted
-      "in_progress",   // currently ongoing
-      "completed",     // finished
-      "cancelled"      // by user or provider
+    /* ---------------- SERVICES ---------------- */
+    serviceItems: [
+      {
+        service: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "ServiceItem",
+          required: true,
+        },
+        quantity: { type: Number, default: 1 },
+        price: { type: Number, required: true },
+      },
     ],
-    default: "pending",
+
+    addons: [
+      {
+        addon: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "AddOn",
+        },
+        quantity: { type: Number, default: 1 },
+        price: { type: Number, required: true },
+      },
+    ],
+
+    /* ---------------- SCHEDULE ---------------- */
+    bookingDate: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+
+    timeSlot: {
+      start: { type: String, required: true }, // "10:00"
+      end: { type: String, required: true },   // "11:00"
+    },
+
+    bookingType: {
+      type: String,
+      enum: ["in_salon", "home_service"],
+      required: true,
+    },
+
+    // Only required for home service
+    serviceLocation: {
+      address: String,
+      coordinates: {
+        type: { type: String, enum: ["Point"], default: "Point" },
+        coordinates: [Number],
+      },
+    },
+
+    /* ---------------- PAYMENT ---------------- */
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed", "refunded"],
+      default: "pending",
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "online", "upi", "card"],
+      default: "cash",
+    },
+
+    /* ---------------- BOOKING STATUS ---------------- */
+    status: {
+      type: String,
+      enum: [
+        "pending",      // created, waiting confirmation
+        "confirmed",    // accepted by provider
+        "in_progress",  // service started
+        "completed",    // finished
+        "cancelled",    // cancelled by user/provider
+        "no_show",      // customer didn't arrive
+      ],
+      default: "pending",
+      index: true,
+    },
+
+    cancellationReason: String,
+
+    /* ---------------- FEEDBACK ---------------- */
+    rating: {
+      score: { type: Number, min: 1, max: 5 },
+      feedback: String,
+    },
+
+    notes: String,
   },
-
-  notes: String,
-
-  rating: {
-    score: { type: Number, min: 1, max: 5 },
-    feedback: String,
-  },
-
-}, { timestamps: true });
+  {
+    timestamps: true,
+  }
+);
 
 export default mongoose.model("Booking", bookingSchema);

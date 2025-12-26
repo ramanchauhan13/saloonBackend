@@ -85,22 +85,39 @@ export const subscribePlan = async (req, res) => {
 
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan) return res.status(404).json({ message: "Plan not found" });
+
     const salon = await Salon.findOne({ owner: userId });
     if (!salon) return res.status(404).json({ message: "Salon not found" });
+
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + plan.durationInDays);
+
     salon.subscription = {
       planId,
       startDate,
       endDate,
       paymentStatus: "paid",
     };
+
+     // ✅ Set onboardedBy ONLY at subscription time
+    if (!salon.onboardedBy) {
+      salon.onboardedBy = userId;
+    }
+
     await salon.save();
     console.log("Subscription updated for salon:", salon._id);
-    res.status(200).json({ success: true, message: "Subscription assigned successfully", startDate, endDate });
+     return res.status(200).json({
+      success: true,
+      message: "Subscription assigned successfully",
+      startDate,
+      endDate,
+      onboardedBy: salon.onboardedBy,
+      referredBy: salon.referredBy,
+    });
+
   } catch (error) {
-    console.error(error);
+     console.error("Subscribe plan error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

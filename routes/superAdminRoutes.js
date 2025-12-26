@@ -16,16 +16,17 @@ import {
 
 import { verifyUser, blockUser, activateUser,  getAllUsers } from "../controllers/userController.js";
 
-import { getAllSaloons, getUnverifiedSalons, verifySalonByAdmin } from "../controllers/salonController.js";
+import { getAllSalons, getUnverifiedSalons, verifySalonByAdmin } from "../controllers/salonController.js";
 
 import {
   getSubscriptionPlans,
   createSubscriptionPlan
 } from "../controllers/subscriptionController.js";
+import { getSuperAdminDashboardStats } from "../controllers/superAdminController.js";
 
 const router = Router();
 
-router.get("/getAllSaloons", authenticate, isSuperAdmin, getAllSaloons);
+router.get("/getAllSalons", authenticate, isSuperAdmin, getAllSalons);
 router.post("/create-category", authenticate, isSuperAdmin, createCategory);
 router.get("/getAllCategories", authenticate, isSuperAdmin, getAllCategories);
 router.patch(
@@ -57,5 +58,7 @@ router.patch('/verify-salon/:salonId', authenticate, isSuperAdmin, verifySalonBy
 // Subscription Plan Management
 router.get('/get-subscription-plans', authenticate, isSuperAdmin, getSubscriptionPlans);
 router.post('/create-subscription-plan', authenticate, isSuperAdmin, createSubscriptionPlan);
+
+router.get("/dashboard-stats", authenticate, isSuperAdmin, getSuperAdminDashboardStats);
 
 export default router;

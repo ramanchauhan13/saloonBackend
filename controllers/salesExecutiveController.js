@@ -1,5 +1,8 @@
 import User from "../models/User.js";
 import SalesExecutive from "../models/SalesExecutive.js";
+import Salesman from "../models/Salesman.js";
+import mongoose from "mongoose";
+import Salon from "../models/Salon.js";
 import crypto from "crypto";
 
 // Secure random password (8 chars)
@@ -102,6 +105,81 @@ export const getSalesExecutivesByCity = async (req, res) => {
     console.error(error);
     res.status(500).json({
       message: "Failed to fetch sales executives by city.",
+      error: error.message
+    });
+  }
+};
+
+export const getSalesExecutiveDashboardStats = async (req, res) => {
+  try {
+    const salesExecutiveId = req.user?.roleId;
+
+    if (!salesExecutiveId || !mongoose.Types.ObjectId.isValid(salesExecutiveId)) {
+      return res.status(400).json({ message: "Invalid Sales Executive" });
+    }
+
+    // 1️⃣ Sales Executive Info
+    const salesExecutive = await SalesExecutive.findById(salesExecutiveId)
+      .populate("user", "name email")
+      .lean();
+
+    if (!salesExecutive) {
+      return res.status(404).json({ message: "Sales Executive not found" });
+    }
+
+    // 2️⃣ Get all Salesman under this Executive
+    const salesman = await Salesman.find({ salesExecutive: salesExecutiveId })
+      .populate("user", "name")
+      .lean();
+
+    const salesmanIds = salesman.map(s => s._id);
+    // 3️⃣ Total salons registered by all salesman
+    const totalSalons = await Salon.countDocuments({
+      referredBy: { $in: salesmanIds }
+    });
+
+    // 4️⃣ Salon count per salesman
+    const salonCounts = await Salon.aggregate([
+      { $match: { referredBy: { $in: salesmanIds } } },
+      {
+        $group: {
+          _id: "$referredBy",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const salonCountMap = {};
+    salonCounts.forEach(item => {
+      salonCountMap[item._id.toString()] = item.count;
+    });
+
+    // 5️⃣ Salesman detailed list
+    const salesmanDetails = salesman.map(salesman => ({
+      salesmanId: salesman._id,
+      name: salesman.user?.name || "N/A",
+      referralId: salesman.referralId,
+      status: salesman.status,
+      commissionRate: salesman.commissionRate,
+      totalEarnings: salesman.totalEarnings,
+      totalSalons: salonCountMap[salesman._id.toString()] || 0
+    }));
+
+    // 6️⃣ Response
+    res.status(200).json({
+      summary: {
+        totalSalesman: salesman.length,
+        totalSalons,
+        commissionRate: salesExecutive.commissionRate,
+        totalEarnings: salesExecutive.totalEarnings
+      },
+      salesman: salesmanDetails
+    });
+
+  } catch (error) {
+    console.error("Sales Executive Dashboard Error:", error);
+    res.status(500).json({
+      message: "Failed to fetch dashboard stats",
       error: error.message
     });
   }

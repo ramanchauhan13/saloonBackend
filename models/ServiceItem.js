@@ -1,14 +1,6 @@
 // models/ServiceItem.js
 import mongoose from "mongoose";
 
-const addOnSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  price: { type: Number, required: true, min: 0 },
-  duration: { type: Number, default: 0 },
-  isRecommended: { type: Boolean, default: false },
-  isOptional: { type: Boolean, default: true }
-}, { _id: false });
-
 const serviceItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
@@ -29,7 +21,7 @@ const serviceItemSchema = new mongoose.Schema({
     required: true
   },
   providerId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  addOns: [addOnSchema],
+  addOns: [{ type: mongoose.Schema.Types.ObjectId, ref: "AddOn" }],
 }, { timestamps: true });
 
 export default mongoose.model("ServiceItem", serviceItemSchema);

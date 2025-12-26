@@ -21,7 +21,7 @@ const salonSchema = new mongoose.Schema(
 
     salonCategory: {
       type: String,
-      enum: ["men", "women", "unisex", "spa"],
+      enum: ["men", "women", "unisex"],
       required: true,
     },
 
@@ -95,9 +95,13 @@ const salonSchema = new mongoose.Schema(
         default: "pending",
       },
     },
-
     onboardedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    // verifiedByAdmin: { type: Boolean, default: false },
+    referredBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Salesman",
+  default: null,
+  index: true
+}
   },
   {
     timestamps: true,
@@ -116,6 +120,14 @@ salonSchema.virtual("specialistsData", {
 // Service items virtual
 salonSchema.virtual("serviceItemData", {
   ref: "ServiceItem",
+  localField: "_id",
+  foreignField: "providerId",
+  options: { match: { providerType: "salon" } }
+});
+
+// AddOns virtual
+salonSchema.virtual("addOnsData", {
+  ref: "AddOn",
   localField: "_id",
   foreignField: "providerId",
   options: { match: { providerType: "salon" } }

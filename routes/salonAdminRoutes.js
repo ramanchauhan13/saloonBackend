@@ -18,7 +18,9 @@ import { addOrUpdateSalonLocation } from "../controllers/locationController.js";
 
 import { checkSubscriptionStatus, subscribePlan, getSubscriptionPlans } from "../controllers/subscriptionController.js";
 
-import { getSaloonDetails } from "../controllers/salonController.js";
+import { getSalonDetails } from "../controllers/salonController.js";
+
+import { createAddOn, updateAddOn, deleteAddOn, getAddOns} from '../controllers/addonController.js'
 
 import {
   authenticate,
@@ -28,7 +30,7 @@ import { toggleOffersHomeService } from "../controllers/authController.js";
 
 const router = Router();
 
-router.get("/getSaloonDetails", authenticate, getSaloonDetails);
+router.get("/getSalonDetails", authenticate, getSalonDetails);
 
 router.post(
   "/add-specialist",
@@ -57,5 +59,9 @@ router.get("/get-service-items", authenticate, isSalonOwner, getServiceItemsBySa
 
 router.patch("/toggle-home-service", authenticate, isSalonOwner, toggleOffersHomeService);
 
+router.post("/create-add-on", authenticate, isSalonOwner, createAddOn);
+router.put("/update-add-on/:addOnId", authenticate, isSalonOwner, updateAddOn);
+router.get("/get-add-ons", authenticate, isSalonOwner, getAddOns);
+router.delete("/delete-add-on/:addOnId", authenticate, isSalonOwner, deleteAddOn);
 
 export default router;
