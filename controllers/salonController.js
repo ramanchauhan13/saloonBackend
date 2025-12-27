@@ -105,7 +105,7 @@ export const getFeaturedSalons = async (req, res) => {
 export const getAllSalonsByCategory = async (req, res) => {
   console.log("sdgds");
   try {
-    const { category, lat, lng, radius = 500 } = req.query;
+    const { category, lat, lng, radius = 50000 } = req.query;
     console.log(req.query);
 
     if (!lat || !lng) {
@@ -234,7 +234,7 @@ export const getAllSalons = async (req, res) => {
 
 export const getNearbySalons = async (req, res) => {
   try {
-    const { latitude, longitude, radiusInKm = 500 } = req.query;
+    const { latitude, longitude, radiusInKm = 50000 } = req.query;
 
     if (!latitude || !longitude) {
       return res.status(400).json({
@@ -295,7 +295,7 @@ export const getNearbySalons = async (req, res) => {
 export const getHomeSalonsByCategory = async (req, res) => {
   console.log(req.query);
   try {
-    const { category, lat, lng, radius = 500 } = req.query;
+    const { category, lat, lng, radius = 50000 } = req.query;
 
     if (!category || !lat || !lng) {
       return res.status(400).json({
