@@ -6,7 +6,6 @@ import Review from "../models/Review.js"; // Use for virtual populate dont remov
 import Specialist from "../models/Specialist.js";
 
 export const getAllUsers = async (req, res) => {
-  console.log("Fetching all users with role 'customer'");
   try {
     let { page = 1, limit = 10 } = req.query;
     page = parseInt(page);

@@ -84,7 +84,6 @@ export const deleteServiceItem = async (req, res) => {
 
 
 export const getServiceItemsBySalon = async (req, res) => {
-  console.log("Fetching services for user:", req.userId);
   try {
     const userId = req.userId;
     const salon = await Salon.findOne({ owner: userId });
@@ -92,6 +91,23 @@ export const getServiceItemsBySalon = async (req, res) => {
       return res.status(404).json({ success: false, message: "Salon not found" });
     }
     const services = await ServiceItem.find({ providerId: salon._id }).populate("category").lean();
+    res.status(200).json({ success: true, services });
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    res.status(500).json({ success: false, message: "Server error while fetching services", error: error.message });
+  }
+};
+
+
+export const getServiceItemsByCategory = async (req, res) => {
+  console.log("Fetching services for user:", req.params);
+  try {
+    const { salonId, categoryId } = req.params;
+    const salon = await Salon.findById(salonId);
+    if (!salon) {
+      return res.status(404).json({ success: false, message: "Salon not found" });
+    }
+    const services = await ServiceItem.find({ providerId: salon._id, category: categoryId }).lean();
     res.status(200).json({ success: true, services });
     console.log("Services fetched successfully for user:", services);
   } catch (error) {
