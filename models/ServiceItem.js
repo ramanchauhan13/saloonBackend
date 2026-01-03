@@ -8,7 +8,7 @@ const serviceItemSchema = new mongoose.Schema({
   durationMins: { type: Number, default: 30 },
   discountPercent: { type: Number, default: 0 },
   description: { type: String },
-  image: String,
+  imageURL: String,
   status: { type: String, enum: ["active", "inactive"], default: "active" },
   providerType: {
     type: String,

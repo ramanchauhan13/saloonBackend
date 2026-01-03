@@ -40,7 +40,6 @@ export const getFeaturedSalons = async (req, res) => {
   }
 };
 
-
 // export const getFeaturedSalons = async (req, res) => {
 //   try {
 //     const featuredSalons = await Salon.aggregate([
